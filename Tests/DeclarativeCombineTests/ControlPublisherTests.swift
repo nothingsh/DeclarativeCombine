@@ -75,6 +75,54 @@ final class ControlPublisherTests: XCTestCase {
         XCTAssertEqual(values, [0.25])
     }
 
+    func testPickerPublishersEmitTheCurrentValueOnValueChanged() {
+        let segments = UISegmentedControl(items: ["a", "b"])
+        let picker = UIDatePicker()
+        let stepper = UIStepper()
+        let pages = UIPageControl()
+        var indexes: [Int] = []
+        var dates: [Date] = []
+        var steps: [Double] = []
+        var currentPages: [Int] = []
+        segments.selectedSegmentIndexPublisher.sink { indexes.append($0) }.store(in: &cancellables)
+        picker.datePublisher.sink { dates.append($0) }.store(in: &cancellables)
+        stepper.valuePublisher.sink { steps.append($0) }.store(in: &cancellables)
+        pages.currentPagePublisher.sink { currentPages.append($0) }.store(in: &cancellables)
+
+        let date = Date(timeIntervalSinceReferenceDate: 86_400)
+        segments.selectedSegmentIndex = 1
+        picker.date = date
+        stepper.value = 3
+        pages.numberOfPages = 3
+        pages.currentPage = 2
+        segments.fire(.valueChanged)
+        picker.fire(.valueChanged)
+        stepper.fire(.valueChanged)
+        pages.fire(.valueChanged)
+
+        XCTAssertEqual(indexes, [1])
+        XCTAssertEqual(dates, [date])
+        XCTAssertEqual(steps, [3])
+        XCTAssertEqual(currentPages, [2])
+    }
+
+    func testRefreshAndReturnPublishersEmitOnTheirEvent() {
+        let refresh = UIRefreshControl()
+        let field = UITextField()
+        var refreshCount = 0
+        var returnCount = 0
+        refresh.refreshPublisher.sink { refreshCount += 1 }.store(in: &cancellables)
+        field.returnPublisher.sink { returnCount += 1 }.store(in: &cancellables)
+
+        field.fire(.editingChanged)
+        XCTAssertEqual(returnCount, 0)
+
+        refresh.fire(.valueChanged)
+        field.fire(.editingDidEndOnExit)
+        XCTAssertEqual(refreshCount, 1)
+        XCTAssertEqual(returnCount, 1)
+    }
+
     func testTextViewPublisherEmitsOnlyItsOwnChanges() {
         let textView = UITextView()
         let other = UITextView()

@@ -61,6 +61,18 @@ public extension UIControl {
     }
 }
 
+/// Emits `value` of `control` each time one of `events` fires.
+@MainActor
+private func eventValues<Control: UIControl, Value>(
+    of control: Control,
+    for events: UIControl.Event,
+    _ value: @escaping (Control) -> Value
+) -> AnyPublisher<Value, Never> {
+    control.publisher(for: events)
+        .compactMap { [weak control] in control.map(value) }
+        .eraseToAnyPublisher()
+}
+
 @MainActor
 public extension UIButton {
 
@@ -74,9 +86,13 @@ public extension UITextField {
 
     /// Emits the text after each edit, `""` when there is none.
     var textPublisher: AnyPublisher<String, Never> {
-        publisher(for: .editingChanged)
-            .map { [weak self] in self?.text ?? "" }
-            .eraseToAnyPublisher()
+        eventValues(of: self, for: .editingChanged) { $0.text ?? "" }
+    }
+
+    /// Emits when the return key is pressed. UIKit dismisses the keyboard
+    /// when this event has a target.
+    var returnPublisher: AnyPublisher<Void, Never> {
+        publisher(for: .editingDidEndOnExit)
     }
 }
 
@@ -84,9 +100,7 @@ public extension UITextField {
 public extension UISwitch {
 
     var isOnPublisher: AnyPublisher<Bool, Never> {
-        publisher(for: .valueChanged)
-            .compactMap { [weak self] in self?.isOn }
-            .eraseToAnyPublisher()
+        eventValues(of: self, for: .valueChanged, \.isOn)
     }
 }
 
@@ -94,8 +108,47 @@ public extension UISwitch {
 public extension UISlider {
 
     var valuePublisher: AnyPublisher<Float, Never> {
+        eventValues(of: self, for: .valueChanged, \.value)
+    }
+}
+
+@MainActor
+public extension UIStepper {
+
+    var valuePublisher: AnyPublisher<Double, Never> {
+        eventValues(of: self, for: .valueChanged, \.value)
+    }
+}
+
+@MainActor
+public extension UISegmentedControl {
+
+    var selectedSegmentIndexPublisher: AnyPublisher<Int, Never> {
+        eventValues(of: self, for: .valueChanged, \.selectedSegmentIndex)
+    }
+}
+
+@MainActor
+public extension UIDatePicker {
+
+    var datePublisher: AnyPublisher<Date, Never> {
+        eventValues(of: self, for: .valueChanged, \.date)
+    }
+}
+
+@MainActor
+public extension UIPageControl {
+
+    var currentPagePublisher: AnyPublisher<Int, Never> {
+        eventValues(of: self, for: .valueChanged, \.currentPage)
+    }
+}
+
+@MainActor
+public extension UIRefreshControl {
+
+    /// Emits when the user pulls to refresh.
+    var refreshPublisher: AnyPublisher<Void, Never> {
         publisher(for: .valueChanged)
-            .compactMap { [weak self] in self?.value }
-            .eraseToAnyPublisher()
     }
 }
