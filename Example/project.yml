@@ -3,12 +3,16 @@ options:
   bundleIdPrefix: dev.declarativecombine
   deploymentTarget:
     iOS: "15.0"
+    macOS: "12.0"
   developmentLanguage: en
 packages:
   DeclarativeCombine:
     path: ..
   DeclarativeUIKit:
     url: https://github.com/nothingsh/DeclarativeUIKit
+    from: "0.1.0"
+  DeclarativeAppKit:
+    url: https://github.com/nothingsh/DeclarativeAppKit
     from: "0.1.0"
 targets:
   Example:
@@ -27,11 +31,38 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
+  ExampleMac:
+    type: application
+    platform: macOS
+    sources:
+      - ExampleMac
+    dependencies:
+      - package: DeclarativeCombine
+      - package: DeclarativeAppKit
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSPrincipalClass: NSApplication
+        INFOPLIST_KEY_CFBundleDisplayName: DeclarativeCombine Example
+        PRODUCT_BUNDLE_IDENTIFIER: dev.declarativecombine.ExampleMac
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
 schemes:
   Example:
     build:
       targets:
         Example: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+  ExampleMac:
+    build:
+      targets:
+        ExampleMac: all
     run:
       config: Debug
     archive:

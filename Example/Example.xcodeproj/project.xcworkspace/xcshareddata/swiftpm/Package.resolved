@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "declarativeappkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nothingsh/DeclarativeAppKit",
+      "state" : {
+        "revision" : "2fea33c0451adeca3569d435f9d2168303b80b47",
+        "version" : "0.1.0"
+      }
+    },
+    {
       "identity" : "declarativeuikit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nothingsh/DeclarativeUIKit",

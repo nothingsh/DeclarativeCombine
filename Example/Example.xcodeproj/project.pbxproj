@@ -8,20 +8,33 @@
 
 /* Begin PBXBuildFile section */
 		06A3D55FB1368485D8F30B75 /* ControlsExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82319F4A3445F479E27C7876 /* ControlsExampleViewController.swift */; };
+		06C68D7FB8CC112F48C6FEF4 /* DeclarativeAppKit in Frameworks */ = {isa = PBXBuildFile; productRef = D5AB703BD1B692C681D08AA4 /* DeclarativeAppKit */; };
+		1DA74A81F6AF5C33F9108E35 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0BEADD8DAEEFA6F3C67D05 /* main.swift */; };
 		297953BDE25C6AFC68DAF7BD /* ExamplesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437703453DF59A3CF7D95667 /* ExamplesViewController.swift */; };
 		41C43241AE1620FC8A0606FF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A263B39369367A3901B6B7C0 /* AppDelegate.swift */; };
+		62C1B7F11363173CB032C079 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AE8F60D401C33C9B81B940 /* AppDelegate.swift */; };
+		6FD107862AE20768889DA360 /* FormExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B223E903891DDFCC0958137 /* FormExampleViewController.swift */; };
 		715BC75D1EED3E4A51F7B469 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B0C7D7CDCC3AB7C99E21F032 /* LaunchScreen.storyboard */; };
 		8518A8A761D1F97F76083C75 /* ExampleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54C650DECD5F26572D8E78 /* ExampleStyle.swift */; };
 		85832E9EB068A8B91FE8D8CF /* DeclarativeCombine in Frameworks */ = {isa = PBXBuildFile; productRef = 4561AD73A92873C83FE41B45 /* DeclarativeCombine */; };
+		886F6E81239AE41A89FEA46A /* ScrollExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59663C69980D59747F0F611F /* ScrollExampleViewController.swift */; };
 		A6F1B48A8ECB4857F6AF41D9 /* ScrollExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A94CAE76E59DD900EC9188F /* ScrollExampleViewController.swift */; };
 		AC88DDA5C7A1AF78D816D392 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67979B086750BD69A85512EA /* SceneDelegate.swift */; };
+		B5A1AF1B28303EB080A99631 /* ExampleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1287842B101A5CEB28ECD23F /* ExampleStyle.swift */; };
+		C90B853C2D922EB61E1EBA04 /* ControlsExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42807390A1BEF893F87FBAB /* ControlsExampleViewController.swift */; };
+		CFC2A583DC9155D6405C16E5 /* DeclarativeCombine in Frameworks */ = {isa = PBXBuildFile; productRef = E61E5385CA0BE0808AADFDE8 /* DeclarativeCombine */; };
 		F36DEB6478A19B59F423D3D5 /* DeclarativeUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = D0743AF715102DF597BDBDB1 /* DeclarativeUIKit */; };
 		FD256BEF4833313A35143E51 /* FormExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831248BFDB12A705F85319DA /* FormExampleViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1287842B101A5CEB28ECD23F /* ExampleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleStyle.swift; sourceTree = "<group>"; };
+		28AE8F60D401C33C9B81B940 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2D54C650DECD5F26572D8E78 /* ExampleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleStyle.swift; sourceTree = "<group>"; };
 		437703453DF59A3CF7D95667 /* ExamplesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExamplesViewController.swift; sourceTree = "<group>"; };
+		52A30EC11F4DAC336890F5E4 /* ExampleMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExampleMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		59663C69980D59747F0F611F /* ScrollExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollExampleViewController.swift; sourceTree = "<group>"; };
+		5B223E903891DDFCC0958137 /* FormExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormExampleViewController.swift; sourceTree = "<group>"; };
 		67979B086750BD69A85512EA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		69A4799573DEE29B304CC553 /* DeclarativeCombine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DeclarativeCombine; path = ..; sourceTree = SOURCE_ROOT; };
 		7A94CAE76E59DD900EC9188F /* ScrollExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollExampleViewController.swift; sourceTree = "<group>"; };
@@ -29,7 +42,9 @@
 		831248BFDB12A705F85319DA /* FormExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormExampleViewController.swift; sourceTree = "<group>"; };
 		A263B39369367A3901B6B7C0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A70CCE019BA3AE518E7FE7F3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		AC0BEADD8DAEEFA6F3C67D05 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		B0C7D7CDCC3AB7C99E21F032 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B42807390A1BEF893F87FBAB /* ControlsExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsExampleViewController.swift; sourceTree = "<group>"; };
 		F6FE7BF0248FC2FF22A10D63 /* Example.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -40,6 +55,15 @@
 			files = (
 				85832E9EB068A8B91FE8D8CF /* DeclarativeCombine in Frameworks */,
 				F36DEB6478A19B59F423D3D5 /* DeclarativeUIKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B6C3EAB771197947A7AB31E6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CFC2A583DC9155D6405C16E5 /* DeclarativeCombine in Frameworks */,
+				06C68D7FB8CC112F48C6FEF4 /* DeclarativeAppKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -54,10 +78,24 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		2D9DA2CDFBFD02F30BEB6C39 /* ExampleMac */ = {
+			isa = PBXGroup;
+			children = (
+				28AE8F60D401C33C9B81B940 /* AppDelegate.swift */,
+				B42807390A1BEF893F87FBAB /* ControlsExampleViewController.swift */,
+				1287842B101A5CEB28ECD23F /* ExampleStyle.swift */,
+				5B223E903891DDFCC0958137 /* FormExampleViewController.swift */,
+				AC0BEADD8DAEEFA6F3C67D05 /* main.swift */,
+				59663C69980D59747F0F611F /* ScrollExampleViewController.swift */,
+			);
+			path = ExampleMac;
+			sourceTree = "<group>";
+		};
 		3031F8ABC084F8D43CC56342 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				F6FE7BF0248FC2FF22A10D63 /* Example.app */,
+				52A30EC11F4DAC336890F5E4 /* ExampleMac.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,6 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				4F160DA0426D18FD4DFD3610 /* Example */,
+				2D9DA2CDFBFD02F30BEB6C39 /* ExampleMac */,
 				12B9A666C278AB8CB5B6FA33 /* Packages */,
 				3031F8ABC084F8D43CC56342 /* Products */,
 			);
@@ -90,6 +129,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		182243B0C0CC67CA810AB239 /* ExampleMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 494E499BB99DF6C39A741AC2 /* Build configuration list for PBXNativeTarget "ExampleMac" */;
+			buildPhases = (
+				9DD92E9A658B831AE4A88684 /* Sources */,
+				B6C3EAB771197947A7AB31E6 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ExampleMac;
+			packageProductDependencies = (
+				E61E5385CA0BE0808AADFDE8 /* DeclarativeCombine */,
+				D5AB703BD1B692C681D08AA4 /* DeclarativeAppKit */,
+			);
+			productName = ExampleMac;
+			productReference = 52A30EC11F4DAC336890F5E4 /* ExampleMac.app */;
+			productType = "com.apple.product-type.application";
+		};
 		9878B5EABC7D83477291BAFC /* Example */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2557384DB91FFBC8B78A3DC4 /* Build configuration list for PBXNativeTarget "Example" */;
@@ -120,6 +179,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					182243B0C0CC67CA810AB239 = {
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 36FC72E69D906F48675C62BF /* Build configuration list for PBXProject "Example" */;
@@ -132,6 +194,7 @@
 			mainGroup = 54E0667A38E60354DB90F776;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				F2751054AE1C204BF700A379 /* XCRemoteSwiftPackageReference "DeclarativeAppKit" */,
 				755355915B052DC29008A675 /* XCRemoteSwiftPackageReference "DeclarativeUIKit" */,
 				FBA2BE80C796BC2376066D4F /* XCLocalSwiftPackageReference ".." */,
 			);
@@ -141,6 +204,7 @@
 			projectRoot = "";
 			targets = (
 				9878B5EABC7D83477291BAFC /* Example */,
+				182243B0C0CC67CA810AB239 /* ExampleMac */,
 			);
 		};
 /* End PBXProject section */
@@ -168,6 +232,19 @@
 				FD256BEF4833313A35143E51 /* FormExampleViewController.swift in Sources */,
 				AC88DDA5C7A1AF78D816D392 /* SceneDelegate.swift in Sources */,
 				A6F1B48A8ECB4857F6AF41D9 /* ScrollExampleViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9DD92E9A658B831AE4A88684 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62C1B7F11363173CB032C079 /* AppDelegate.swift in Sources */,
+				C90B853C2D922EB61E1EBA04 /* ControlsExampleViewController.swift in Sources */,
+				B5A1AF1B28303EB080A99631 /* ExampleStyle.swift in Sources */,
+				6FD107862AE20768889DA360 /* FormExampleViewController.swift in Sources */,
+				886F6E81239AE41A89FEA46A /* ScrollExampleViewController.swift in Sources */,
+				1DA74A81F6AF5C33F9108E35 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,10 +297,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -265,6 +342,50 @@
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BB119099DE6FA005C118EAA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "DeclarativeCombine Example";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.declarativecombine.ExampleMac;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D1EA469AFD1EF407950C6BA7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "DeclarativeCombine Example";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.declarativecombine.ExampleMac;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -320,11 +441,11 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -352,6 +473,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		494E499BB99DF6C39A741AC2 /* Build configuration list for PBXNativeTarget "ExampleMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D1EA469AFD1EF407950C6BA7 /* Debug */,
+				BB119099DE6FA005C118EAA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -370,6 +500,14 @@
 				minimumVersion = 0.1.0;
 			};
 		};
+		F2751054AE1C204BF700A379 /* XCRemoteSwiftPackageReference "DeclarativeAppKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nothingsh/DeclarativeAppKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -381,6 +519,15 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 755355915B052DC29008A675 /* XCRemoteSwiftPackageReference "DeclarativeUIKit" */;
 			productName = DeclarativeUIKit;
+		};
+		D5AB703BD1B692C681D08AA4 /* DeclarativeAppKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2751054AE1C204BF700A379 /* XCRemoteSwiftPackageReference "DeclarativeAppKit" */;
+			productName = DeclarativeAppKit;
+		};
+		E61E5385CA0BE0808AADFDE8 /* DeclarativeCombine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DeclarativeCombine;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
