@@ -137,9 +137,9 @@ button.tapPublisher
 
 - **弱引用 `self`。** 视图在存活期间一直持有你的闭包。闭包强引用视图控制器会造成循环引用。
 - **publisher 不能失败。** 只接受 `Failure == Never`。绑定前先处理错误，例如用 `replaceError(with:)`。
-- **值在 publisher 发出的线程上应用。** 在后台发出的 publisher 要加 `receive(on: DispatchQueue.main)`。
+- **在主线程发出。** 值在 publisher 发出的地方同步应用，库不会替你切到主线程。在后台发出的 publisher 要加 `receive(on: DispatchQueue.main)`。
 - **每个值都会被赋值。** 加 `removeDuplicates()` 可以跳过没有变化的值。
-- **使用传给闭包的值。** `@Published` 在属性改变之前发出，在 `onReceive` 或 `sink` 里读这个属性得到的是旧值。
+- **使用传给闭包的值。** `@Published` 在属性改变之前发出，在 `onReceive` 里读这个属性得到的是旧值。
 - **同一个属性绑定两次，两个订阅都会保留。** 以最新的值为准。
 
 ## 已知限制

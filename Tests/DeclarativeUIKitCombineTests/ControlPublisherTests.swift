@@ -21,6 +21,24 @@ final class ControlPublisherTests: XCTestCase {
         XCTAssertTrue(button.allTargets.isEmpty)
     }
 
+    func testEventPublisherDropsEventsWithoutDemand() {
+        let button = UIButton()
+        var started = 0
+        button.tapPublisher
+            .flatMap(maxPublishers: .max(1)) { _ -> PassthroughSubject<Void, Never> in
+                started += 1
+                return PassthroughSubject()
+            }
+            .sink {}
+            .store(in: &cancellables)
+
+        button.fire(.touchUpInside)
+        button.fire(.touchUpInside)
+        button.fire(.touchUpInside)
+
+        XCTAssertEqual(started, 1)
+    }
+
     func testTapPublisherEmitsOnTouchUpInside() {
         let button = UIButton()
         var count = 0

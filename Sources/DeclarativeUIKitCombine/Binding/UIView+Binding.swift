@@ -27,7 +27,8 @@ public protocol PublisherBindable: UIView {}
 extension UIView: PublisherBindable {}
 
 /// Each modifier subscribes once and keeps the subscription until the view is
-/// released. Values are applied on the thread the publisher emits on.
+/// released. Values are applied synchronously where the publisher emits, so
+/// it must emit on the main thread.
 @MainActor
 public extension PublisherBindable {
 

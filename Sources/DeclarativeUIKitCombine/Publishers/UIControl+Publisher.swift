@@ -6,9 +6,10 @@ private final class ControlEventSubscription: NSObject, Subscription {
 
     private weak var control: UIControl?
     private let events: UIControl.Event
-    private var receive: (() -> Void)?
+    private var receive: (() -> Subscribers.Demand)?
+    private var demand = Subscribers.Demand.none
 
-    init(control: UIControl?, events: UIControl.Event, receive: @escaping () -> Void) {
+    init(control: UIControl?, events: UIControl.Event, receive: @escaping () -> Subscribers.Demand) {
         self.control = control
         self.events = events
         self.receive = receive
@@ -16,16 +17,20 @@ private final class ControlEventSubscription: NSObject, Subscription {
         control?.addTarget(self, action: #selector(eventFired), for: events)
     }
 
-    // Control events are not buffered, so demand is not tracked.
-    func request(_ demand: Subscribers.Demand) {}
+    func request(_ demand: Subscribers.Demand) {
+        self.demand += demand
+    }
 
     func cancel() {
         control?.removeTarget(self, action: #selector(eventFired), for: events)
         receive = nil
     }
 
+    // Events are not buffered: one that fires without demand is dropped.
     @objc private func eventFired() {
-        receive?()
+        guard demand > .none, let receive else { return }
+        demand -= 1
+        demand += receive()
     }
 }
 
@@ -38,7 +43,7 @@ private struct ControlEventPublisher: Publisher {
 
     func receive<S: Subscriber>(subscriber: S) where S.Input == Void, S.Failure == Never {
         let subscription = ControlEventSubscription(control: control, events: events) {
-            _ = subscriber.receive()
+            subscriber.receive()
         }
         subscriber.receive(subscription: subscription)
     }

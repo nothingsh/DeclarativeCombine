@@ -137,9 +137,9 @@ These publishers emit on user interaction only. They emit nothing when you subsc
 
 - **Capture `self` weakly.** The view keeps your closure for as long as it lives. A closure that captures the view controller strongly creates a retain cycle.
 - **Publishers must not fail.** Only `Failure == Never` is accepted. Handle errors before binding, for example with `replaceError(with:)`.
-- **Values are applied on the thread the publisher emits on.** Add `receive(on: DispatchQueue.main)` to a publisher that emits in the background.
+- **Emit on the main thread.** Values are applied synchronously, wherever the publisher emits; nothing hops to the main thread for you. Add `receive(on: DispatchQueue.main)` to a publisher that emits in the background.
 - **Every value is assigned.** Add `removeDuplicates()` to skip values that did not change.
-- **Use the value passed to the closure.** `@Published` emits before the property changes, so reading the property inside `onReceive` or `sink` returns the old value.
+- **Use the value passed to the closure.** `@Published` emits before the property changes, so reading the property inside `onReceive` returns the old value.
 - **Binding one property twice keeps both subscriptions.** The latest value wins.
 
 ## Known limitations
