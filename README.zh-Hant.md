@@ -119,9 +119,20 @@ UITextField()
 | `UIControl` | `publisher(for:)` | `Void`，每次其中一個事件觸發時 |
 | `UIButton` | `tapPublisher` | `Void`，`.touchUpInside` 時 |
 | `UITextField` | `textPublisher` | `String`，`.editingChanged` 時 |
+| `UITextField` | `returnPublisher` | `Void`，按下 return 鍵時 |
+| `UITextView` | `textPublisher` | `String`，使用者編輯文字時 |
 | `UISwitch` | `isOnPublisher` | `Bool`，`.valueChanged` 時 |
 | `UISlider` | `valuePublisher` | `Float`，`.valueChanged` 時 |
-| `UITextView` | `textPublisher` | `String`，使用者編輯文字時 |
+| `UIStepper` | `valuePublisher` | `Double`，`.valueChanged` 時 |
+| `UISegmentedControl` | `selectedSegmentIndexPublisher` | `Int`，`.valueChanged` 時 |
+| `UIDatePicker` | `datePublisher` | `Date`，`.valueChanged` 時 |
+| `UIPageControl` | `currentPagePublisher` | `Int`，`.valueChanged` 時 |
+| `UIRefreshControl` | `refreshPublisher` | `Void`，使用者下拉重新整理時 |
+| `UIScrollView` | `contentOffsetPublisher` | `CGPoint`，每次位移量變化時 |
+| `UIScrollView` | `contentSizePublisher` | `CGSize`，每次內容尺寸變化時 |
+| `UIView` | `tapGesturePublisher` | `UITapGestureRecognizer`，每次點按時 |
+| `UIView` | `longPressGesturePublisher` | `UILongPressGestureRecognizer`，每次狀態變化時 |
+| `UIView` | `gesturePublisher(_:)` | 你傳入的辨識器，每次它送出 action 時 |
 
 它們可以脫離繫結 modifier 單獨使用：
 
@@ -131,7 +142,28 @@ button.tapPublisher
     .store(in: &cancellables)
 ```
 
-這些 publisher 只在使用者互動時發出。訂閱時不發出，用程式碼指派時也不發出。它們弱參考視圖，並且不會結束。
+控制項的 publisher 只在使用者互動時發出：訂閱時不發出，用程式碼指派時也不發出。scroll view 的 publisher 在每次變化時發出，包括程式碼造成的變化，訂閱時同樣不發出。所有 publisher 都不會讓視圖無法釋放，也都不會結束。
+
+`returnPublisher` 使用 `.editingDidEndOnExit`，這個事件有 target 時 UIKit 會收起鍵盤。
+
+搜尋列的文字欄位是 `UITextField`，所以 `searchBar.searchTextField.textPublisher` 可以直接用。
+
+#### 手勢
+
+訂閱手勢 publisher 會替視圖加入一個辨識器，取消訂閱時移除：
+
+```swift
+UIImageView(image: photo)
+    .isUserInteractionEnabled(true)
+    .sink(\.tapGesturePublisher) { [weak self] _ in self?.showPhoto() }
+
+UIView()
+    .sink({ $0.gesturePublisher(UIPanGestureRecognizer()) }) { [weak self] pan in
+        self?.drag(by: pan.translation(in: pan.view))
+    }
+```
+
+`UILabel` 和 `UIImageView` 在 `isUserInteractionEnabled` 為 `true` 之前不回應觸控。連續手勢在每次狀態變化時都發出，用 `state` 區分。
 
 ## 規則
 
@@ -146,7 +178,7 @@ button.tapPublisher
 
 - 內容閉包仍然只執行一次。繫結更新的是屬性，不會新增、移除或重排視圖。
 - 繫結在視圖釋放之前無法移除，所以不要在每次設定可重用 cell 時重新繫結。
-- 沒有手勢辨識器和委派的 publisher。
+- 沒有委派回呼的 publisher，例如選取表格的一列。請自己設定委派。
 
 ## 授權
 

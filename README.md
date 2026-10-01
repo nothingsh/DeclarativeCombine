@@ -119,9 +119,20 @@ UITextField()
 | `UIControl` | `publisher(for:)` | `Void`, each time one of the events fires |
 | `UIButton` | `tapPublisher` | `Void`, on `.touchUpInside` |
 | `UITextField` | `textPublisher` | `String`, on `.editingChanged` |
+| `UITextField` | `returnPublisher` | `Void`, when the return key is pressed |
+| `UITextView` | `textPublisher` | `String`, when the user edits the text |
 | `UISwitch` | `isOnPublisher` | `Bool`, on `.valueChanged` |
 | `UISlider` | `valuePublisher` | `Float`, on `.valueChanged` |
-| `UITextView` | `textPublisher` | `String`, when the user edits the text |
+| `UIStepper` | `valuePublisher` | `Double`, on `.valueChanged` |
+| `UISegmentedControl` | `selectedSegmentIndexPublisher` | `Int`, on `.valueChanged` |
+| `UIDatePicker` | `datePublisher` | `Date`, on `.valueChanged` |
+| `UIPageControl` | `currentPagePublisher` | `Int`, on `.valueChanged` |
+| `UIRefreshControl` | `refreshPublisher` | `Void`, when the user pulls to refresh |
+| `UIScrollView` | `contentOffsetPublisher` | `CGPoint`, each time the offset changes |
+| `UIScrollView` | `contentSizePublisher` | `CGSize`, each time the content size changes |
+| `UIView` | `tapGesturePublisher` | `UITapGestureRecognizer`, on each tap |
+| `UIView` | `longPressGesturePublisher` | `UILongPressGestureRecognizer`, on each state change |
+| `UIView` | `gesturePublisher(_:)` | the recognizer you pass, each time it sends its action |
 
 They can be used without the binding modifiers:
 
@@ -131,7 +142,28 @@ button.tapPublisher
     .store(in: &cancellables)
 ```
 
-These publishers emit on user interaction only. They emit nothing when you subscribe and nothing when you set the value in code. They hold the view weakly and never complete.
+Control publishers emit on user interaction only: nothing when you subscribe, and nothing when you set the value in code. The scroll view publishers emit on every change, including one made in code, and still nothing when you subscribe. No publisher keeps its view alive, and none of them completes.
+
+`returnPublisher` uses `.editingDidEndOnExit`, and UIKit dismisses the keyboard when that event has a target.
+
+A search bar's text field is a `UITextField`, so `searchBar.searchTextField.textPublisher` works.
+
+#### Gestures
+
+Subscribing to a gesture publisher adds a recognizer to the view, and cancelling removes it:
+
+```swift
+UIImageView(image: photo)
+    .isUserInteractionEnabled(true)
+    .sink(\.tapGesturePublisher) { [weak self] _ in self?.showPhoto() }
+
+UIView()
+    .sink({ $0.gesturePublisher(UIPanGestureRecognizer()) }) { [weak self] pan in
+        self?.drag(by: pan.translation(in: pan.view))
+    }
+```
+
+`UILabel` and `UIImageView` ignore touches until `isUserInteractionEnabled` is `true`. A continuous gesture emits on every state change; read `state` to tell them apart.
 
 ## Rules
 
@@ -146,7 +178,7 @@ These publishers emit on user interaction only. They emit nothing when you subsc
 
 - A content closure still runs once. Bindings update properties; they do not add, remove or reorder views.
 - A binding cannot be removed before its view is released, so do not bind again each time a reusable cell is configured.
-- There are no publishers for gesture recognizers or delegates.
+- There are no publishers for delegate callbacks, such as selecting a table view row. Set the delegate yourself.
 
 ## License
 

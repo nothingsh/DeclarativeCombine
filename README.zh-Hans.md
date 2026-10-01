@@ -119,9 +119,20 @@ UITextField()
 | `UIControl` | `publisher(for:)` | `Void`，每次其中一个事件触发时 |
 | `UIButton` | `tapPublisher` | `Void`，`.touchUpInside` 时 |
 | `UITextField` | `textPublisher` | `String`，`.editingChanged` 时 |
+| `UITextField` | `returnPublisher` | `Void`，按下回车键时 |
+| `UITextView` | `textPublisher` | `String`，用户编辑文本时 |
 | `UISwitch` | `isOnPublisher` | `Bool`，`.valueChanged` 时 |
 | `UISlider` | `valuePublisher` | `Float`，`.valueChanged` 时 |
-| `UITextView` | `textPublisher` | `String`，用户编辑文本时 |
+| `UIStepper` | `valuePublisher` | `Double`，`.valueChanged` 时 |
+| `UISegmentedControl` | `selectedSegmentIndexPublisher` | `Int`，`.valueChanged` 时 |
+| `UIDatePicker` | `datePublisher` | `Date`，`.valueChanged` 时 |
+| `UIPageControl` | `currentPagePublisher` | `Int`，`.valueChanged` 时 |
+| `UIRefreshControl` | `refreshPublisher` | `Void`，用户下拉刷新时 |
+| `UIScrollView` | `contentOffsetPublisher` | `CGPoint`，每次偏移量变化时 |
+| `UIScrollView` | `contentSizePublisher` | `CGSize`，每次内容尺寸变化时 |
+| `UIView` | `tapGesturePublisher` | `UITapGestureRecognizer`，每次点击时 |
+| `UIView` | `longPressGesturePublisher` | `UILongPressGestureRecognizer`，每次状态变化时 |
+| `UIView` | `gesturePublisher(_:)` | 你传入的识别器，每次它发送 action 时 |
 
 它们可以脱离绑定 modifier 单独使用：
 
@@ -131,7 +142,28 @@ button.tapPublisher
     .store(in: &cancellables)
 ```
 
-这些 publisher 只在用户交互时发出。订阅时不发出，用代码赋值时也不发出。它们弱引用视图，并且不会结束。
+控件的 publisher 只在用户交互时发出：订阅时不发出，用代码赋值时也不发出。scroll view 的 publisher 在每次变化时发出，包括代码造成的变化，订阅时同样不发出。所有 publisher 都不会让视图无法释放，也都不会结束。
+
+`returnPublisher` 使用 `.editingDidEndOnExit`，这个事件有 target 时 UIKit 会收起键盘。
+
+搜索栏的文本框是 `UITextField`，所以 `searchBar.searchTextField.textPublisher` 可以直接用。
+
+#### 手势
+
+订阅手势 publisher 会给视图添加一个识别器，取消订阅时移除：
+
+```swift
+UIImageView(image: photo)
+    .isUserInteractionEnabled(true)
+    .sink(\.tapGesturePublisher) { [weak self] _ in self?.showPhoto() }
+
+UIView()
+    .sink({ $0.gesturePublisher(UIPanGestureRecognizer()) }) { [weak self] pan in
+        self?.drag(by: pan.translation(in: pan.view))
+    }
+```
+
+`UILabel` 和 `UIImageView` 在 `isUserInteractionEnabled` 为 `true` 之前不响应触摸。连续手势在每次状态变化时都发出，用 `state` 区分。
 
 ## 规则
 
@@ -146,7 +178,7 @@ button.tapPublisher
 
 - 内容闭包仍然只运行一次。绑定更新的是属性，不会增加、移除或重排视图。
 - 绑定在视图释放之前无法移除，所以不要在每次配置可复用 cell 时重新绑定。
-- 没有手势识别器和代理的 publisher。
+- 没有代理回调的 publisher，例如选中表格的一行。请自己设置代理。
 
 ## 许可
 
