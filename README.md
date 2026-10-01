@@ -174,6 +174,46 @@ UIView()
 - **Use the value passed to the closure.** `@Published` emits before the property changes, so reading the property inside `onReceive` returns the old value.
 - **Binding one property twice keeps both subscriptions.** The latest value wins.
 
+## Example app
+
+`Example/Example.xcodeproj` is a small iOS app that uses this package as a local package and DeclarativeUIKit from GitHub. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. It has three screens:
+
+- **Form**: fields, a switch and a slider bound both ways to a view model.
+- **Scrolling header**: a header driven by the scroll offset, pull to refresh, and a tap gesture.
+- **Controls**: a segmented control that shows and hides sections, with a stepper, a date picker and a page control.
+
+### Form
+
+This is the form from DeclarativeUIKit's example app. There, the view controller keeps eight views in properties, adds four targets, and needs three `@objc` methods and a text field delegate. Here it keeps none of them, because every control is bound where it is declared:
+
+```swift
+UITextField()
+    .placeholder("Name")
+    .returnKeyType(.next)
+    .bind(\.text, to: model.name)
+    .send(\.textPublisher, to: model.name)
+    .send(\.returnPublisher, to: nameReturned)
+
+UITextField()
+    .placeholder("Email")
+    .bind(\.text, to: model.email)
+    .send(\.textPublisher, to: model.email)
+    .onReceive(nameReturned) { field, _ in field.becomeFirstResponder() }
+
+UISlider()
+    .minimumValue(1)
+    .maximumValue(7)
+    .bind(\.value, to: model.issuesPerWeek)
+    .sink(\.valuePublisher) { model.issuesPerWeek.send($0.rounded()) }
+
+UIButton(type: .system)
+    .title("Submit")
+    .bind(\.isEnabled, to: model.canSubmit)
+    .send(\.tapPublisher, to: model.submit)
+```
+
+The view model is plain Combine and knows nothing about views. Clear resets the model, and every control follows it. Return in the name field reaches the email field through a subject, so neither field refers to the other.
+
 ## Known limitations
 
 - A content closure still runs once. Bindings update properties; they do not add, remove or reorder views.

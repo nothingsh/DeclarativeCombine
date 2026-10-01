@@ -174,6 +174,46 @@ UIView()
 - **使用传给闭包的值。** `@Published` 在属性改变之前发出，在 `onReceive` 里读这个属性得到的是旧值。
 - **同一个属性绑定两次，两个订阅都会保留。** 以最新的值为准。
 
+## 示例 App
+
+`Example/Example.xcodeproj` 是一个小型 iOS App，以本地包的方式使用本包，并从 GitHub 引入 DeclarativeUIKit。用 Xcode 打开，选择 `Example` scheme 和一个 iOS 模拟器即可运行。它有三个页面：
+
+- **Form**：文本框、开关和滑块与 view model 双向绑定。
+- **Scrolling header**：由滚动偏移量驱动的头部、下拉刷新，以及一个点击手势。
+- **Controls**：用分段控件显示和隐藏区块，配有步进器、日期选择器和页码控件。
+
+### Form
+
+这就是 DeclarativeUIKit 示例 App 里的那个表单。在那边，视图控制器把八个视图存成属性，添加了四个 target，还需要三个 `@objc` 方法和一个文本框代理。在这里这些都不需要，因为每个控件都在声明它的地方绑定：
+
+```swift
+UITextField()
+    .placeholder("Name")
+    .returnKeyType(.next)
+    .bind(\.text, to: model.name)
+    .send(\.textPublisher, to: model.name)
+    .send(\.returnPublisher, to: nameReturned)
+
+UITextField()
+    .placeholder("Email")
+    .bind(\.text, to: model.email)
+    .send(\.textPublisher, to: model.email)
+    .onReceive(nameReturned) { field, _ in field.becomeFirstResponder() }
+
+UISlider()
+    .minimumValue(1)
+    .maximumValue(7)
+    .bind(\.value, to: model.issuesPerWeek)
+    .sink(\.valuePublisher) { model.issuesPerWeek.send($0.rounded()) }
+
+UIButton(type: .system)
+    .title("Submit")
+    .bind(\.isEnabled, to: model.canSubmit)
+    .send(\.tapPublisher, to: model.submit)
+```
+
+view model 是纯 Combine，对视图一无所知。Clear 重置 model，每个控件随之更新。在 name 文本框里按回车，会通过一个 subject 传到 email 文本框，两个文本框互不引用。
+
 ## 已知限制
 
 - 内容闭包仍然只运行一次。绑定更新的是属性，不会增加、移除或重排视图。
