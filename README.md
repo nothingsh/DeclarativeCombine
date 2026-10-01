@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md)
 
-Combine bindings for UIKit views, made for [DeclarativeUIKit](https://github.com/nothingsh/DeclarativeUIKit) content closures.
+Combine bindings for UIKit and AppKit views, made for [DeclarativeUIKit](https://github.com/nothingsh/DeclarativeUIKit) and [DeclarativeAppKit](https://github.com/nothingsh/DeclarativeAppKit) content closures.
 
 A view that needs to change, or to report events, no longer has to be stored in a property outside the layout. Bind it where it is declared:
 
@@ -23,7 +23,7 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 }
 ```
 
-Every modifier returns the view itself, and the subscription lives exactly as long as the view. There is no base class to inherit and no protocol to adopt: any `UIView` subclass, including your own, can be bound.
+Every modifier returns the view itself, and the subscription lives exactly as long as the view. There is no base class to inherit and no protocol to adopt: any `UIView` or `NSView` subclass, including your own, can be bound.
 
 ## Contents
 
@@ -33,6 +33,7 @@ Every modifier returns the view itself, and the subscription lives exactly as lo
   - [Data to a view](#data-to-a-view)
   - [Events from a view](#events-from-a-view)
   - [Publishers](#publishers)
+  - [AppKit](#appkit)
 - [Rules](#rules)
 - [Example app](#example-app)
   - [Form](#form)
@@ -43,7 +44,7 @@ Every modifier returns the view itself, and the subscription lives exactly as lo
 
 ## Requirements
 
-- iOS 13+
+- iOS 13+ or macOS 11+
 - Swift 5.9+
 
 ## Installation
@@ -58,7 +59,7 @@ dependencies: [
 
 Or in Xcode, choose File → Add Package Dependencies and enter `https://github.com/nothingsh/DeclarativeCombine`.
 
-This package does not depend on DeclarativeUIKit. Add both packages to use them together, or use this one on its own with any UIKit code.
+This package does not depend on DeclarativeUIKit or DeclarativeAppKit. Add it next to either one, or use it on its own with any UIKit or AppKit code.
 
 ## Usage
 
@@ -181,6 +182,56 @@ UIView()
 
 `UILabel` and `UIImageView` ignore touches until `isUserInteractionEnabled` is `true`. A continuous gesture emits on every state change; read `state` to tell them apart.
 
+### AppKit
+
+On macOS the binding modifiers are the same, and the publishers are named after AppKit's own properties:
+
+```swift
+view.addVStack(alignment: .leading, spacing: 12) {
+    NSTextField()
+        .placeholderString("Name")
+        .sink(\.stringValuePublisher) { [weak self] in self?.model.name = $0 }
+
+    NSTextField(labelWithString: "")
+        .bind(\.stringValue, to: $model.map(\.hint))
+
+    NSButton()
+        .title("Submit")
+        .bind(\.isEnabled, to: $model.map(\.canSubmit))
+        .sink(\.clickPublisher) { [weak self] in self?.submit() }
+}
+```
+
+| View | Publisher | Emits |
+|---|---|---|
+| `NSControl` | `actionPublisher` | `Void`, each time the control sends its action |
+| `NSButton` | `clickPublisher` | `Void`, on each click |
+| `NSButton` | `statePublisher` | `NSControl.StateValue`, after each click |
+| `NSSwitch` | `statePublisher` | `NSControl.StateValue`, when the user flips it |
+| `NSSlider` | `doubleValuePublisher` | `Double`, when the user moves it |
+| `NSStepper` | `doubleValuePublisher` | `Double`, on each step |
+| `NSSegmentedControl` | `selectedSegmentPublisher` | `Int`, when the user picks a segment |
+| `NSDatePicker` | `dateValuePublisher` | `Date`, when the user changes the date |
+| `NSPopUpButton` | `indexOfSelectedItemPublisher` | `Int`, when the user picks an item |
+| `NSTextField` | `stringValuePublisher` | `String`, when the user edits the text |
+| `NSTextField` | `returnPublisher` | `Void`, when the return key ends editing |
+| `NSTextView` | `stringPublisher` | `String`, when the user edits the text |
+| `NSScrollView` | `documentVisibleRectPublisher` | `CGRect`, each time the visible part of the document changes |
+| `NSScrollView` | `documentSizePublisher` | `CGSize`, each time the document view's size changes |
+| `NSView` | `clickGesturePublisher` | `NSClickGestureRecognizer`, on each click |
+| `NSView` | `pressGesturePublisher` | `NSPressGestureRecognizer`, on each state change |
+| `NSView` | `gesturePublisher(_:)` | the recognizer you pass, each time it sends its action |
+
+The same rules apply as on iOS: control and text publishers emit on user interaction only, the scroll view publishers emit on every change, and none of them emits when you subscribe.
+
+An `NSControl` has one target and one action, and a control publisher takes both over. Do not set `target` or `action` on a control you subscribe to. Any number of subscriptions can share one control. The two `NSTextField` publishers are the exception: they observe notifications, so the field's own action still works.
+
+AppKit still decides when a control sends its action. A continuous `NSSlider` emits throughout a drag, and `sendAction(on:)` changes when a button does.
+
+The origin of `documentVisibleRectPublisher` is the scroll position, in the document view's coordinates. Its `y` grows downwards when the document view is flipped, as the content of DeclarativeAppKit's `VScroll` and `HScroll` is. The rectangle also changes when the visible area is resized.
+
+A gesture recognizer has a single target too, so pass each recognizer to one subscription only.
+
 ## Rules
 
 - **Capture `self` weakly.** The view keeps your closure for as long as it lives, and that includes closures inside the publisher you bind, such as `map { self.format($0) }`. A closure that captures the view controller strongly creates a retain cycle.
@@ -189,6 +240,7 @@ UIView()
 - **Every value is assigned.** Add `removeDuplicates()` to skip values that did not change.
 - **Use the value passed to the closure.** `@Published` emits before the property changes, so reading the property inside `onReceive` returns the old value.
 - **Binding one property twice keeps both subscriptions.** The latest value wins.
+- **On macOS, a control publisher owns the control's target and action.** Leave both alone on a control you subscribe to. If you replace both, the publisher stops emitting until something subscribes to that control again. If you replace only one, the control's target no longer implements its action, and AppKit raises an exception when the control fires.
 
 ## Example app
 
@@ -336,6 +388,9 @@ UILabel()
 - A content closure still runs once. Bindings update properties; they do not add, remove or reorder views.
 - A binding cannot be removed before its view is released, so do not bind again each time a reusable cell is configured.
 - There are no publishers for delegate callbacks, such as selecting a table view row. Set the delegate yourself.
+- On macOS, choosing an item from an `NSComboBox` list does not emit from `stringValuePublisher`; only typing does.
+- On macOS, `documentVisibleRectPublisher` reports the document view's own coordinates, so `origin.y` runs upwards unless the document view is flipped.
+- The example app is iOS only.
 
 ## License
 

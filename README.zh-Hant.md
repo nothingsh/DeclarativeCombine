@@ -2,7 +2,7 @@
 
 [English](README.md) | [简体中文](README.zh-Hans.md) | **繁體中文**
 
-為 UIKit 視圖提供 Combine 繫結，搭配 [DeclarativeUIKit](https://github.com/nothingsh/DeclarativeUIKit) 的內容閉包使用。
+為 UIKit 和 AppKit 視圖提供 Combine 繫結，搭配 [DeclarativeUIKit](https://github.com/nothingsh/DeclarativeUIKit) 和 [DeclarativeAppKit](https://github.com/nothingsh/DeclarativeAppKit) 的內容閉包使用。
 
 需要更新或回報事件的視圖，不必再存成版面配置之外的屬性。在宣告它的地方直接繫結：
 
@@ -23,7 +23,7 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 }
 ```
 
-每個 modifier 都回傳視圖本身，訂閱的生命週期與視圖完全一致。不需要繼承基底類別，也不需要遵循協定：任何 `UIView` 子類別，包括你自己的，都可以繫結。
+每個 modifier 都回傳視圖本身，訂閱的生命週期與視圖完全一致。不需要繼承基底類別，也不需要遵循協定：任何 `UIView` 或 `NSView` 子類別，包括你自己的，都可以繫結。
 
 ## 目錄
 
@@ -33,6 +33,7 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
   - [資料到視圖](#資料到視圖)
   - [視圖的事件](#視圖的事件)
   - [Publisher](#publisher)
+  - [AppKit](#appkit)
 - [規則](#規則)
 - [範例 App](#範例-app)
   - [Form](#form)
@@ -43,7 +44,7 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 
 ## 環境需求
 
-- iOS 13+
+- iOS 13+ 或 macOS 11+
 - Swift 5.9+
 
 ## 安裝
@@ -58,7 +59,7 @@ dependencies: [
 
 或在 Xcode 中選擇 File → Add Package Dependencies，輸入 `https://github.com/nothingsh/DeclarativeCombine`。
 
-本套件不依賴 DeclarativeUIKit。兩個套件一起加入即可搭配使用，也可以單獨用在任何 UIKit 程式碼裡。
+本套件不依賴 DeclarativeUIKit 或 DeclarativeAppKit。和其中任何一個一起加入即可搭配使用，也可以單獨用在任何 UIKit 或 AppKit 程式碼裡。
 
 ## 用法
 
@@ -181,6 +182,56 @@ UIView()
 
 `UILabel` 和 `UIImageView` 在 `isUserInteractionEnabled` 為 `true` 之前不回應觸控。連續手勢在每次狀態變化時都發出，用 `state` 區分。
 
+### AppKit
+
+在 macOS 上繫結 modifier 完全相同，publisher 依 AppKit 自己的屬性命名：
+
+```swift
+view.addVStack(alignment: .leading, spacing: 12) {
+    NSTextField()
+        .placeholderString("Name")
+        .sink(\.stringValuePublisher) { [weak self] in self?.model.name = $0 }
+
+    NSTextField(labelWithString: "")
+        .bind(\.stringValue, to: $model.map(\.hint))
+
+    NSButton()
+        .title("Submit")
+        .bind(\.isEnabled, to: $model.map(\.canSubmit))
+        .sink(\.clickPublisher) { [weak self] in self?.submit() }
+}
+```
+
+| 視圖 | Publisher | 發出 |
+|---|---|---|
+| `NSControl` | `actionPublisher` | `Void`，控制項每次送出 action 時 |
+| `NSButton` | `clickPublisher` | `Void`，每次點按時 |
+| `NSButton` | `statePublisher` | `NSControl.StateValue`，每次點按之後 |
+| `NSSwitch` | `statePublisher` | `NSControl.StateValue`，使用者切換開關時 |
+| `NSSlider` | `doubleValuePublisher` | `Double`，使用者拖移時 |
+| `NSStepper` | `doubleValuePublisher` | `Double`，每次步進時 |
+| `NSSegmentedControl` | `selectedSegmentPublisher` | `Int`，使用者選擇分段時 |
+| `NSDatePicker` | `dateValuePublisher` | `Date`，使用者修改日期時 |
+| `NSPopUpButton` | `indexOfSelectedItemPublisher` | `Int`，使用者選擇項目時 |
+| `NSTextField` | `stringValuePublisher` | `String`，使用者編輯文字時 |
+| `NSTextField` | `returnPublisher` | `Void`，按 return 鍵結束編輯時 |
+| `NSTextView` | `stringPublisher` | `String`，使用者編輯文字時 |
+| `NSScrollView` | `documentVisibleRectPublisher` | `CGRect`，每次文件的可見部分變化時 |
+| `NSScrollView` | `documentSizePublisher` | `CGSize`，每次 document view 的尺寸變化時 |
+| `NSView` | `clickGesturePublisher` | `NSClickGestureRecognizer`，每次點按時 |
+| `NSView` | `pressGesturePublisher` | `NSPressGestureRecognizer`，每次狀態變化時 |
+| `NSView` | `gesturePublisher(_:)` | 你傳入的辨識器，每次它送出 action 時 |
+
+規則與 iOS 上相同：控制項和文字的 publisher 只在使用者互動時發出，scroll view 的 publisher 在每次變化時發出，訂閱時都不發出。
+
+`NSControl` 只有一個 target 和一個 action，控制項的 publisher 會接管它們。不要替你訂閱的控制項設定 `target` 或 `action`。同一個控制項可以有任意多個訂閱。`NSTextField` 的兩個 publisher 是例外：它們監聽通知，所以文字欄位自己的 action 照常運作。
+
+控制項何時送出 action 仍由 AppKit 決定。連續模式的 `NSSlider` 在拖移過程中持續發出，`sendAction(on:)` 會改變按鈕發出的時機。
+
+`documentVisibleRectPublisher` 的 origin 是捲動位置，使用 document view 的座標系。document view 是 flipped 時 `y` 向下增大，DeclarativeAppKit 的 `VScroll` 和 `HScroll` 的內容就是這樣。可見區域的大小改變時這個矩形也會變化。
+
+手勢辨識器同樣只有一個 target，所以每個辨識器只傳給一個訂閱。
+
 ## 規則
 
 - **弱參考 `self`。** 視圖在存活期間一直持有你的閉包，也包括你繫結的 publisher 裡的閉包，例如 `map { self.format($0) }`。閉包強參考視圖控制器會造成循環參考。
@@ -189,6 +240,7 @@ UIView()
 - **每個值都會被指派。** 加 `removeDuplicates()` 可以略過沒有變化的值。
 - **使用傳給閉包的值。** `@Published` 在屬性改變之前發出，在 `onReceive` 裡讀這個屬性得到的是舊值。
 - **同一個屬性繫結兩次，兩個訂閱都會保留。** 以最新的值為準。
+- **在 macOS 上，控制項的 publisher 佔用控制項的 target 和 action。** 不要更動你訂閱的控制項的這兩個屬性。兩個都換掉，publisher 就不再發出，直到這個控制項再次被訂閱。只換掉其中一個，控制項的 target 就不再實作它的 action，控制項觸發時 AppKit 會拋出例外。
 
 ## 範例 App
 
@@ -336,6 +388,9 @@ UILabel()
 - 內容閉包仍然只執行一次。繫結更新的是屬性，不會新增、移除或重排視圖。
 - 繫結在視圖釋放之前無法移除，所以不要在每次設定可重用 cell 時重新繫結。
 - 沒有委派回呼的 publisher，例如選取表格的一列。請自己設定委派。
+- 在 macOS 上，從 `NSComboBox` 的下拉清單裡選擇項目不會讓 `stringValuePublisher` 發出，只有鍵入才會。
+- 在 macOS 上，`documentVisibleRectPublisher` 使用 document view 自己的座標系，所以除非 document view 是 flipped，否則 `origin.y` 向上增大。
+- 範例 App 只有 iOS 版。
 
 ## 授權
 
