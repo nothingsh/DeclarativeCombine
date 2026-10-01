@@ -20,7 +20,7 @@ run_dir="$(mktemp -d "$validation_dir/run-$(date +%Y%m%d-%H%M%S)-XXXXXX")"
 # Save the entire log and preserve xcodebuild's status across tee.
 set +e
 xcodebuild \
-    -scheme DeclarativeUIKitCombine \
+    -scheme DeclarativeCombine \
     -sdk iphonesimulator \
     -destination "platform=iOS Simulator,id=$IOS_SIMULATOR_ID" \
     -derivedDataPath "$validation_dir/DerivedData" \

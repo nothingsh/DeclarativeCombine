@@ -1,4 +1,4 @@
-# DeclarativeUIKitCombine
+# DeclarativeCombine
 
 [English](README.md) | [简体中文](README.zh-Hans.md) | **繁體中文**
 
@@ -36,11 +36,11 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nothingsh/DeclarativeUIKitCombine.git", from: "0.1.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.1.0")
 ]
 ```
 
-或在 Xcode 中選擇 File → Add Package Dependencies，輸入 `https://github.com/nothingsh/DeclarativeUIKitCombine`。
+或在 Xcode 中選擇 File → Add Package Dependencies，輸入 `https://github.com/nothingsh/DeclarativeCombine`。
 
 本套件不依賴 DeclarativeUIKit。兩個套件一起加入即可搭配使用，也可以單獨用在任何 UIKit 程式碼裡。
 

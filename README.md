@@ -1,4 +1,4 @@
-# DeclarativeUIKitCombine
+# DeclarativeCombine
 
 **English** | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md)
 
@@ -36,11 +36,11 @@ Swift Package Manager. In `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nothingsh/DeclarativeUIKitCombine.git", from: "0.1.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.1.0")
 ]
 ```
 
-Or in Xcode, choose File → Add Package Dependencies and enter `https://github.com/nothingsh/DeclarativeUIKitCombine`.
+Or in Xcode, choose File → Add Package Dependencies and enter `https://github.com/nothingsh/DeclarativeCombine`.
 
 This package does not depend on DeclarativeUIKit. Add both packages to use them together, or use this one on its own with any UIKit code.
 

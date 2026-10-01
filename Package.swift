@@ -2,15 +2,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "DeclarativeUIKitCombine",
+    name: "DeclarativeCombine",
     platforms: [.iOS(.v13)],
     products: [
-        .library(name: "DeclarativeUIKitCombine", targets: ["DeclarativeUIKitCombine"])
+        .library(name: "DeclarativeCombine", targets: ["DeclarativeCombine"])
     ],
     dependencies: [],
     targets: [
-        .target(name: "DeclarativeUIKitCombine"),
-        .testTarget(name: "DeclarativeUIKitCombineTests", dependencies: ["DeclarativeUIKitCombine"])
+        .target(name: "DeclarativeCombine"),
+        .testTarget(name: "DeclarativeCombineTests", dependencies: ["DeclarativeCombine"])
     ],
     swiftLanguageVersions: [.v5]
 )

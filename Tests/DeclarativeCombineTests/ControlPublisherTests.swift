@@ -1,7 +1,7 @@
 import Combine
 import UIKit
 import XCTest
-import DeclarativeUIKitCombine
+import DeclarativeCombine
 
 @MainActor
 final class ControlPublisherTests: XCTestCase {
