@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Combine
 import UIKit
 import XCTest
@@ -158,3 +159,4 @@ final class ControlPublisherTests: XCTestCase {
         XCTAssertNil(textView)
     }
 }
+#endif

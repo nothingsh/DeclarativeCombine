@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Combine
 import UIKit
 
@@ -19,3 +20,4 @@ public extension UITextView {
             .eraseToAnyPublisher()
     }
 }
+#endif

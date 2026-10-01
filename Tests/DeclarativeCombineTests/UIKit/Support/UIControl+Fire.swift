@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import UIKit
 
 extension UIControl {
@@ -12,3 +13,4 @@ extension UIControl {
         }
     }
 }
+#endif

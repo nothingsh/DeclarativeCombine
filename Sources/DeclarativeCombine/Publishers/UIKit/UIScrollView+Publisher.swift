@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Combine
 import UIKit
 
@@ -36,3 +37,4 @@ private extension UIScrollView {
         .eraseToAnyPublisher()
     }
 }
+#endif

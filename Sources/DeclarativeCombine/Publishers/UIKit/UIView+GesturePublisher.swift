@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Combine
 import UIKit
 
@@ -77,3 +78,4 @@ public extension UIView {
         gesturePublisher(UILongPressGestureRecognizer())
     }
 }
+#endif

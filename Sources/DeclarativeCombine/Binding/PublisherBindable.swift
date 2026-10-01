@@ -1,5 +1,9 @@
 import Combine
+#if canImport(UIKit)
 import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 private var cancellableStoreKey: UInt8 = 0
 
@@ -8,7 +12,21 @@ private final class CancellableStore {
     var cancellables = Set<AnyCancellable>()
 }
 
-private extension UIView {
+#if canImport(UIKit)
+/// Carries the binding modifiers so that `Self` is the concrete view type in
+/// key paths. Every `UIView` conforms; do not conform other types.
+public protocol PublisherBindable: UIView {}
+
+extension UIView: PublisherBindable {}
+#elseif os(macOS)
+/// Carries the binding modifiers so that `Self` is the concrete view type in
+/// key paths. Every `NSView` conforms; do not conform other types.
+public protocol PublisherBindable: NSView {}
+
+extension NSView: PublisherBindable {}
+#endif
+
+private extension PublisherBindable {
 
     var cancellableStore: CancellableStore {
         if let store = objc_getAssociatedObject(self, &cancellableStoreKey) as? CancellableStore {
@@ -19,12 +37,6 @@ private extension UIView {
         return store
     }
 }
-
-/// Carries the binding modifiers so that `Self` is the concrete view type in
-/// key paths. Every `UIView` conforms; do not conform other types.
-public protocol PublisherBindable: UIView {}
-
-extension UIView: PublisherBindable {}
 
 /// Each modifier subscribes once and keeps the subscription until the view is
 /// released. Values are applied synchronously where the publisher emits, so

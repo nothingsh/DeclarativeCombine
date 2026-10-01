@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Combine
 import UIKit
 
@@ -152,3 +153,4 @@ public extension UIRefreshControl {
         publisher(for: .valueChanged)
     }
 }
+#endif

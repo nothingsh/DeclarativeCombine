@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Combine
 import UIKit
 import XCTest
@@ -91,3 +92,4 @@ final class ViewPublisherTests: XCTestCase {
         XCTAssertNotNil(publisher)
     }
 }
+#endif

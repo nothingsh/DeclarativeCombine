@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Combine
 import UIKit
 import XCTest
@@ -116,3 +117,4 @@ final class BindingTests: XCTestCase {
         text.send("abc")
     }
 }
+#endif
