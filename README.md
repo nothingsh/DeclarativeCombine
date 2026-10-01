@@ -39,6 +39,7 @@ Every modifier returns the view itself, and the subscription lives exactly as lo
   - [Form](#form)
   - [Scrolling header](#scrolling-header)
   - [Controls](#controls)
+  - [macOS form](#macos-form)
 - [Known limitations](#known-limitations)
 - [License](#license)
 
@@ -244,7 +245,7 @@ A gesture recognizer has a single target too, so pass each recognizer to one sub
 
 ## Example app
 
-`Example/Example.xcodeproj` is a small iOS app that uses this package as a local package and DeclarativeUIKit from GitHub. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. The snippets below are trimmed from its three screens.
+`Example/Example.xcodeproj` holds two small apps that use this package as a local package: an iOS app with DeclarativeUIKit and a macOS app with DeclarativeAppKit, both from GitHub. Open it in Xcode and run the `Example` scheme on an iOS Simulator, or the `ExampleMac` scheme on your Mac. Both apps have the same three screens. The snippets below are trimmed from the iOS app, followed by the [form of the macOS app](#macos-form).
 
 ### Form
 
@@ -383,6 +384,43 @@ UILabel()
 </tr>
 </table>
 
+### macOS form
+
+The same form in AppKit, from `Example/ExampleMac`. The publishers carry AppKit's names, and two details differ from iOS. AppKit selects the name field again when return ends its editing, so the focus moves to the email field on the next turn of the run loop. Setting a text view's `string` moves its insertion point, so the notes are written only when the model differs from what was typed.
+
+```swift
+NSTextField()
+    .placeholderString("Name")
+    .bind(\.stringValue, to: model.name)
+    .send(\.stringValuePublisher, to: model.name)
+    .send(\.returnPublisher, to: nameReturned)
+
+NSTextField()
+    .placeholderString("Email")
+    .bind(\.stringValue, to: model.email)
+    .send(\.stringValuePublisher, to: model.email)
+    .onReceive(nameReturned.receive(on: DispatchQueue.main)) { field, _ in
+        field.window?.makeFirstResponder(field)
+    }
+
+NSTextView()
+    .onReceive(model.notes) { textView, notes in
+        if textView.string != notes {
+            textView.string = notes
+        }
+    }
+    .send(\.stringPublisher, to: model.notes)
+
+NSSwitch()
+    .bind(\.state, to: model.newsletter.map { $0 ? .on : .off })
+    .sink(\.statePublisher) { model.newsletter.send($0 == .on) }
+
+NSButton()
+    .title("Submit")
+    .bind(\.isEnabled, to: model.canSubmit)
+    .send(\.clickPublisher, to: model.submit)
+```
+
 ## Known limitations
 
 - A content closure still runs once. Bindings update properties; they do not add, remove or reorder views.
@@ -390,7 +428,6 @@ UILabel()
 - There are no publishers for delegate callbacks, such as selecting a table view row. Set the delegate yourself.
 - On macOS, choosing an item from an `NSComboBox` list does not emit from `stringValuePublisher`; only typing does.
 - On macOS, `documentVisibleRectPublisher` reports the document view's own coordinates, so `origin.y` runs upwards unless the document view is flipped.
-- The example app is iOS only.
 
 ## License
 

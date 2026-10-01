@@ -39,6 +39,7 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
   - [Form](#form)
   - [Scrolling header](#scrolling-header)
   - [Controls](#controls)
+  - [macOS form](#macos-form)
 - [已知限制](#已知限制)
 - [许可](#许可)
 
@@ -244,7 +245,7 @@ view.addVStack(alignment: .leading, spacing: 12) {
 
 ## 示例 App
 
-`Example/Example.xcodeproj` 是一个小型 iOS App，以本地包的方式使用本包，并从 GitHub 引入 DeclarativeUIKit。用 Xcode 打开，选择 `Example` scheme 和一个 iOS 模拟器即可运行。下面的代码片段摘自它的三个页面。
+`Example/Example.xcodeproj` 里有两个小型 App，都以本地包的方式使用本包：iOS App 搭配 DeclarativeUIKit，macOS App 搭配 DeclarativeAppKit，两者都从 GitHub 引入。用 Xcode 打开，在 iOS 模拟器上运行 `Example` scheme，或在你的 Mac 上运行 `ExampleMac` scheme。两个 App 有同样的三个页面。下面的代码片段摘自 iOS App，最后是 [macOS App 的表单](#macos-form)。
 
 ### Form
 
@@ -383,6 +384,43 @@ UILabel()
 </tr>
 </table>
 
+### macOS form
+
+AppKit 版的同一张表单，来自 `Example/ExampleMac`。publisher 用的是 AppKit 的名字，另有两处与 iOS 不同。回车结束编辑时 AppKit 会重新选中姓名文本框，所以焦点在 run loop 的下一轮才移到邮箱文本框。给 text view 的 `string` 赋值会移动插入点，所以只有当模型与输入的内容不同时才写入备注。
+
+```swift
+NSTextField()
+    .placeholderString("Name")
+    .bind(\.stringValue, to: model.name)
+    .send(\.stringValuePublisher, to: model.name)
+    .send(\.returnPublisher, to: nameReturned)
+
+NSTextField()
+    .placeholderString("Email")
+    .bind(\.stringValue, to: model.email)
+    .send(\.stringValuePublisher, to: model.email)
+    .onReceive(nameReturned.receive(on: DispatchQueue.main)) { field, _ in
+        field.window?.makeFirstResponder(field)
+    }
+
+NSTextView()
+    .onReceive(model.notes) { textView, notes in
+        if textView.string != notes {
+            textView.string = notes
+        }
+    }
+    .send(\.stringPublisher, to: model.notes)
+
+NSSwitch()
+    .bind(\.state, to: model.newsletter.map { $0 ? .on : .off })
+    .sink(\.statePublisher) { model.newsletter.send($0 == .on) }
+
+NSButton()
+    .title("Submit")
+    .bind(\.isEnabled, to: model.canSubmit)
+    .send(\.clickPublisher, to: model.submit)
+```
+
 ## 已知限制
 
 - 内容闭包仍然只运行一次。绑定更新的是属性，不会增加、移除或重排视图。
@@ -390,7 +428,6 @@ UILabel()
 - 没有代理回调的 publisher，例如选中表格的一行。请自己设置代理。
 - 在 macOS 上，从 `NSComboBox` 的下拉列表里选择条目不会让 `stringValuePublisher` 发出，只有键入才会。
 - 在 macOS 上，`documentVisibleRectPublisher` 使用 document view 自己的坐标系，所以除非 document view 是 flipped，否则 `origin.y` 向上增大。
-- 示例 App 只有 iOS 版。
 
 ## 许可
 
