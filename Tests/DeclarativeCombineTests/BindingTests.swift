@@ -86,6 +86,10 @@ final class BindingTests: XCTestCase {
         weak var label: UILabel?
         weak var button: UIButton?
         weak var textView: UITextView?
+        weak var field: UITextField?
+        weak var scrollView: UIScrollView?
+        weak var gestureView: UIView?
+        let name = CurrentValueSubject<String, Never>("abc")
         autoreleasepool {
             let source = text.handleEvents(receiveCancel: { cancelCount += 1 })
             label = UILabel()
@@ -95,11 +99,19 @@ final class BindingTests: XCTestCase {
                 .sink(\.tapPublisher) {}
                 .send(\.tapPublisher, to: taps)
             textView = UITextView().sink(\.textPublisher) { _ in }
+            field = UITextField()
+                .bind(\.text, to: name)
+                .send(\.textPublisher, to: name)
+            scrollView = UIScrollView().sink(\.contentOffsetPublisher) { _ in }
+            gestureView = UIView().sink(\.tapGesturePublisher) { _ in }
         }
 
         XCTAssertNil(label)
         XCTAssertNil(button)
         XCTAssertNil(textView)
+        XCTAssertNil(field)
+        XCTAssertNil(scrollView)
+        XCTAssertNil(gestureView)
         XCTAssertEqual(cancelCount, 2)
         text.send("abc")
     }

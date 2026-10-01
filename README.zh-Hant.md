@@ -167,7 +167,7 @@ UIView()
 
 ## 規則
 
-- **弱參考 `self`。** 視圖在存活期間一直持有你的閉包。閉包強參考視圖控制器會造成循環參考。
+- **弱參考 `self`。** 視圖在存活期間一直持有你的閉包，也包括你繫結的 publisher 裡的閉包，例如 `map { self.format($0) }`。閉包強參考視圖控制器會造成循環參考。
 - **publisher 不能失敗。** 只接受 `Failure == Never`。繫結前先處理錯誤，例如用 `replaceError(with:)`。
 - **在主執行緒發出。** 值在 publisher 發出的地方同步套用，函式庫不會替你切到主執行緒。在背景發出的 publisher 要加 `receive(on: DispatchQueue.main)`。
 - **每個值都會被指派。** 加 `removeDuplicates()` 可以略過沒有變化的值。

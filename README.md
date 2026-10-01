@@ -167,7 +167,7 @@ UIView()
 
 ## Rules
 
-- **Capture `self` weakly.** The view keeps your closure for as long as it lives. A closure that captures the view controller strongly creates a retain cycle.
+- **Capture `self` weakly.** The view keeps your closure for as long as it lives, and that includes closures inside the publisher you bind, such as `map { self.format($0) }`. A closure that captures the view controller strongly creates a retain cycle.
 - **Publishers must not fail.** Only `Failure == Never` is accepted. Handle errors before binding, for example with `replaceError(with:)`.
 - **Emit on the main thread.** Values are applied synchronously, wherever the publisher emits; nothing hops to the main thread for you. Add `receive(on: DispatchQueue.main)` to a publisher that emits in the background.
 - **Every value is assigned.** Add `removeDuplicates()` to skip values that did not change.
