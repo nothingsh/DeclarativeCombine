@@ -1,0 +1,93 @@
+import Combine
+import UIKit
+
+private var cancellableStoreKey: UInt8 = 0
+
+/// Keeps a view's subscriptions alive for as long as the view.
+private final class CancellableStore {
+    var cancellables = Set<AnyCancellable>()
+}
+
+private extension UIView {
+
+    var cancellableStore: CancellableStore {
+        if let store = objc_getAssociatedObject(self, &cancellableStoreKey) as? CancellableStore {
+            return store
+        }
+        let store = CancellableStore()
+        objc_setAssociatedObject(self, &cancellableStoreKey, store, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        return store
+    }
+}
+
+/// Carries the binding modifiers so that `Self` is the concrete view type in
+/// key paths. Every `UIView` conforms; do not conform other types.
+public protocol PublisherBindable: UIView {}
+
+extension UIView: PublisherBindable {}
+
+/// Each modifier subscribes once and keeps the subscription until the view is
+/// released. Values are applied on the thread the publisher emits on.
+@MainActor
+public extension PublisherBindable {
+
+    /// Assigns each value the publisher emits to the property at `keyPath`.
+    @discardableResult
+    func bind<P: Publisher>(
+        _ keyPath: ReferenceWritableKeyPath<Self, P.Output>,
+        to publisher: P
+    ) -> Self where P.Failure == Never {
+        publisher
+            .sink { [weak self] in self?[keyPath: keyPath] = $0 }
+            .store(in: &cancellableStore.cancellables)
+        return self
+    }
+
+    /// Assigns each value to an optional property, such as `\.text` from a
+    /// publisher of `String`.
+    @discardableResult
+    func bind<P: Publisher>(
+        _ keyPath: ReferenceWritableKeyPath<Self, P.Output?>,
+        to publisher: P
+    ) -> Self where P.Failure == Never {
+        bind(keyPath, to: publisher.map(Optional.some))
+    }
+
+    /// Runs `action` with this view and each value the publisher emits.
+    @discardableResult
+    func onReceive<P: Publisher>(
+        _ publisher: P,
+        perform action: @escaping (Self, P.Output) -> Void
+    ) -> Self where P.Failure == Never {
+        publisher
+            .sink { [weak self] value in
+                guard let self else { return }
+                action(self, value)
+            }
+            .store(in: &cancellableStore.cancellables)
+        return self
+    }
+
+    /// Runs `receiveValue` with each value from one of this view's own
+    /// publishers, such as `\.tapPublisher`.
+    @discardableResult
+    func sink<P: Publisher>(
+        _ publisher: (Self) -> P,
+        receiveValue: @escaping (P.Output) -> Void
+    ) -> Self where P.Failure == Never {
+        publisher(self)
+            .sink(receiveValue: receiveValue)
+            .store(in: &cancellableStore.cancellables)
+        return self
+    }
+
+    /// Sends each value from one of this view's own publishers to `subject`.
+    /// Completion is not forwarded.
+    @discardableResult
+    func send<P: Publisher, S: Subject>(
+        _ publisher: (Self) -> P,
+        to subject: S
+    ) -> Self where P.Failure == Never, S.Output == P.Output, S.Failure == Never {
+        sink(publisher) { subject.send($0) }
+    }
+}
