@@ -25,6 +25,22 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 
 Every modifier returns the view itself, and the subscription lives exactly as long as the view. There is no base class to inherit and no protocol to adopt: any `UIView` subclass, including your own, can be bound.
 
+## Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Data to a view](#data-to-a-view)
+  - [Events from a view](#events-from-a-view)
+  - [Publishers](#publishers)
+- [Rules](#rules)
+- [Example app](#example-app)
+  - [Form](#form)
+  - [Scrolling header](#scrolling-header)
+  - [Controls](#controls)
+- [Known limitations](#known-limitations)
+- [License](#license)
+
 ## Requirements
 
 - iOS 13+
@@ -176,15 +192,15 @@ UIView()
 
 ## Example app
 
-`Example/Example.xcodeproj` is a small iOS app that uses this package as a local package and DeclarativeUIKit from GitHub. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. It has three screens:
-
-- **Form**: fields, a switch and a slider bound both ways to a view model.
-- **Scrolling header**: a header driven by the scroll offset, pull to refresh, and a tap gesture.
-- **Controls**: a segmented control that shows and hides sections, with a stepper, a date picker and a page control.
+`Example/Example.xcodeproj` is a small iOS app that uses this package as a local package and DeclarativeUIKit from GitHub. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. The snippets below are trimmed from its three screens.
 
 ### Form
 
-This is the form from DeclarativeUIKit's example app. There, the view controller keeps eight views in properties, adds four targets, and needs three `@objc` methods and a text field delegate. Here it keeps none of them, because every control is bound where it is declared:
+This is the form from DeclarativeUIKit's example app. There, the view controller keeps eight views in properties, adds four targets, and needs three `@objc` methods and a text field delegate. Here it keeps none of them, because every control is bound where it is declared. The view model is plain Combine and knows nothing about views. Return in the name field reaches the email field through a subject, `nameReturned`, so neither field refers to the other.
+
+<table>
+<tr>
+<td>
 
 ```swift
 UITextField()
@@ -198,21 +214,122 @@ UITextField()
     .placeholder("Email")
     .bind(\.text, to: model.email)
     .send(\.textPublisher, to: model.email)
-    .onReceive(nameReturned) { field, _ in field.becomeFirstResponder() }
+    .onReceive(nameReturned) { field, _ in
+        field.becomeFirstResponder()
+    }
 
 UISlider()
     .minimumValue(1)
     .maximumValue(7)
     .bind(\.value, to: model.issuesPerWeek)
-    .sink(\.valuePublisher) { model.issuesPerWeek.send($0.rounded()) }
+    .sink(\.valuePublisher) {
+        model.issuesPerWeek.send($0.rounded())
+    }
 
 UIButton(type: .system)
     .title("Submit")
     .bind(\.isEnabled, to: model.canSubmit)
     .send(\.tapPublisher, to: model.submit)
+
+UILabel()
+    .numberOfLines(0)
+    .bind(\.text, to: model.result)
 ```
 
-The view model is plain Combine and knows nothing about views. Clear resets the model, and every control follows it. Return in the name field reaches the email field through a subject, so neither field refers to the other.
+</td>
+<td width="300">
+<img src="docs/images/example-form.png" width="300" alt="Form screen">
+</td>
+</tr>
+</table>
+
+### Scrolling header
+
+The scroll view sends its offset to `offset`, a subject kept by the view controller, and the header reads it back: it fades as the page scrolls up. The header and the scroll view never refer to each other. The heart is an image view with a tap gesture, and pull to refresh ends when the model publishes a new time.
+
+<table>
+<tr>
+<td>
+
+```swift
+addScreen {
+    VStack(spacing: 8) {
+        UIImageView()
+            .isUserInteractionEnabled(true)
+            .bind(\.image, to: model.$isFavorite.map {
+                UIImage(systemName: $0 ? "heart.fill" : "heart")
+            })
+            .sink(\.tapGesturePublisher) { _ in
+                model.toggleFavorite()
+            }
+        UILabel()
+            .bind(\.text, to: offset.map { "Offset \(Int($0))" })
+    }
+    .card()
+    .bind(\.alpha, to: offset.map {
+        1 - min(max($0 / 120, 0), 1)
+    })
+
+    // ...
+}
+.send({ $0.contentOffsetPublisher.map(\.y) }, to: offset)
+.configure {
+    $0.refreshControl = UIRefreshControl()
+        .sink(\.refreshPublisher) { model.reload() }
+        .onReceive(model.$updatedAt.dropFirst()) { control, _ in
+            control.endRefreshing()
+        }
+}
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-scroll.png" width="300" alt="Scrolling header screen">
+</td>
+</tr>
+</table>
+
+### Controls
+
+The segmented control writes the selected section to the model, and each section binds `isHidden` to it. The stack view closes the gap a hidden section leaves, so nothing is added or removed. A long press emits on every state change, so the reset filters for the start of the press.
+
+<table>
+<tr>
+<td>
+
+```swift
+UISegmentedControl(items: ControlsViewModel.sections)
+    .bind(\.selectedSegmentIndex, to: model.$section)
+    .sink(\.selectedSegmentIndexPublisher) {
+        model.section = $0
+    }
+
+VStack(alignment: .leading, spacing: 12) {
+    UIDatePicker()
+        .bind(\.date, to: model.$date)
+        .sink(\.datePublisher) { model.date = $0 }
+    UILabel()
+        .bind(\.text, to: model.$date.map {
+            Self.dateFormatter.string(from: $0)
+        })
+}
+.card()
+.bind(\.isHidden, to: model.$section.map { $0 != 1 })
+
+UILabel()
+    .text("Hold here to reset")
+    .isUserInteractionEnabled(true)
+    .sink({
+        $0.longPressGesturePublisher.filter { $0.state == .began }
+    }) { _ in model.reset() }
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-controls.png" width="300" alt="Controls screen">
+</td>
+</tr>
+</table>
 
 ## Known limitations
 

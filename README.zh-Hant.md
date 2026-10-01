@@ -25,6 +25,22 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 
 每個 modifier 都回傳視圖本身，訂閱的生命週期與視圖完全一致。不需要繼承基底類別，也不需要遵循協定：任何 `UIView` 子類別，包括你自己的，都可以繫結。
 
+## 目錄
+
+- [環境需求](#環境需求)
+- [安裝](#安裝)
+- [用法](#用法)
+  - [資料到視圖](#資料到視圖)
+  - [視圖的事件](#視圖的事件)
+  - [Publisher](#publisher)
+- [規則](#規則)
+- [範例 App](#範例-app)
+  - [Form](#form)
+  - [Scrolling header](#scrolling-header)
+  - [Controls](#controls)
+- [已知限制](#已知限制)
+- [授權](#授權)
+
 ## 環境需求
 
 - iOS 13+
@@ -176,15 +192,15 @@ UIView()
 
 ## 範例 App
 
-`Example/Example.xcodeproj` 是一個小型 iOS App，以本機套件的方式使用本套件，並從 GitHub 引入 DeclarativeUIKit。用 Xcode 開啟，選擇 `Example` scheme 和一個 iOS 模擬器即可執行。它有三個畫面：
-
-- **Form**：文字欄位、開關和滑桿與 view model 雙向繫結。
-- **Scrolling header**：由捲動位移量驅動的標頭、下拉重新整理，以及一個點按手勢。
-- **Controls**：用分段控制項顯示和隱藏區塊，配有步進器、日期選擇器和頁面控制項。
+`Example/Example.xcodeproj` 是一個小型 iOS App，以本機套件的方式使用本套件，並從 GitHub 引入 DeclarativeUIKit。用 Xcode 開啟，選擇 `Example` scheme 和一個 iOS 模擬器即可執行。下面的程式碼片段摘自它的三個畫面。
 
 ### Form
 
-這就是 DeclarativeUIKit 範例 App 裡的那個表單。在那邊，視圖控制器把八個視圖存成屬性，加入了四個 target，還需要三個 `@objc` 方法和一個文字欄位委派。在這裡這些都不需要，因為每個控制項都在宣告它的地方繫結：
+這就是 DeclarativeUIKit 範例 App 裡的那個表單。在那邊，視圖控制器把八個視圖存成屬性，加入了四個 target，還需要三個 `@objc` 方法和一個文字欄位委派。在這裡這些都不需要，因為每個控制項都在宣告它的地方繫結。view model 是純 Combine，對視圖一無所知。在 name 文字欄位裡按 return，會透過 `nameReturned` 這個 subject 傳到 email 文字欄位，兩個文字欄位互不參考。
+
+<table>
+<tr>
+<td>
 
 ```swift
 UITextField()
@@ -198,21 +214,122 @@ UITextField()
     .placeholder("Email")
     .bind(\.text, to: model.email)
     .send(\.textPublisher, to: model.email)
-    .onReceive(nameReturned) { field, _ in field.becomeFirstResponder() }
+    .onReceive(nameReturned) { field, _ in
+        field.becomeFirstResponder()
+    }
 
 UISlider()
     .minimumValue(1)
     .maximumValue(7)
     .bind(\.value, to: model.issuesPerWeek)
-    .sink(\.valuePublisher) { model.issuesPerWeek.send($0.rounded()) }
+    .sink(\.valuePublisher) {
+        model.issuesPerWeek.send($0.rounded())
+    }
 
 UIButton(type: .system)
     .title("Submit")
     .bind(\.isEnabled, to: model.canSubmit)
     .send(\.tapPublisher, to: model.submit)
+
+UILabel()
+    .numberOfLines(0)
+    .bind(\.text, to: model.result)
 ```
 
-view model 是純 Combine，對視圖一無所知。Clear 重設 model，每個控制項隨之更新。在 name 文字欄位裡按 return，會透過一個 subject 傳到 email 文字欄位，兩個文字欄位互不參考。
+</td>
+<td width="300">
+<img src="docs/images/example-form.png" width="300" alt="表單畫面">
+</td>
+</tr>
+</table>
+
+### Scrolling header
+
+scroll view 把位移量送給 `offset`，這是視圖控制器持有的一個 subject，標頭再從它讀回來：頁面上滑時標頭淡出。標頭和 scroll view 互不參考。愛心是一個帶點按手勢的 image view，下拉重新整理在 model 發布新時間時結束。
+
+<table>
+<tr>
+<td>
+
+```swift
+addScreen {
+    VStack(spacing: 8) {
+        UIImageView()
+            .isUserInteractionEnabled(true)
+            .bind(\.image, to: model.$isFavorite.map {
+                UIImage(systemName: $0 ? "heart.fill" : "heart")
+            })
+            .sink(\.tapGesturePublisher) { _ in
+                model.toggleFavorite()
+            }
+        UILabel()
+            .bind(\.text, to: offset.map { "Offset \(Int($0))" })
+    }
+    .card()
+    .bind(\.alpha, to: offset.map {
+        1 - min(max($0 / 120, 0), 1)
+    })
+
+    // ...
+}
+.send({ $0.contentOffsetPublisher.map(\.y) }, to: offset)
+.configure {
+    $0.refreshControl = UIRefreshControl()
+        .sink(\.refreshPublisher) { model.reload() }
+        .onReceive(model.$updatedAt.dropFirst()) { control, _ in
+            control.endRefreshing()
+        }
+}
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-scroll.png" width="300" alt="捲動標頭畫面">
+</td>
+</tr>
+</table>
+
+### Controls
+
+分段控制項把選取的區塊寫入 model，每個區塊把 `isHidden` 繫結到它。stack view 會收合隱藏區塊留下的空隙，所以沒有視圖被加入或移除。長按在每次狀態變化時都發出，所以重設時只取長按開始的那一次。
+
+<table>
+<tr>
+<td>
+
+```swift
+UISegmentedControl(items: ControlsViewModel.sections)
+    .bind(\.selectedSegmentIndex, to: model.$section)
+    .sink(\.selectedSegmentIndexPublisher) {
+        model.section = $0
+    }
+
+VStack(alignment: .leading, spacing: 12) {
+    UIDatePicker()
+        .bind(\.date, to: model.$date)
+        .sink(\.datePublisher) { model.date = $0 }
+    UILabel()
+        .bind(\.text, to: model.$date.map {
+            Self.dateFormatter.string(from: $0)
+        })
+}
+.card()
+.bind(\.isHidden, to: model.$section.map { $0 != 1 })
+
+UILabel()
+    .text("Hold here to reset")
+    .isUserInteractionEnabled(true)
+    .sink({
+        $0.longPressGesturePublisher.filter { $0.state == .began }
+    }) { _ in model.reset() }
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-controls.png" width="300" alt="控制項畫面">
+</td>
+</tr>
+</table>
 
 ## 已知限制
 
