@@ -23,7 +23,7 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 }
 ```
 
-每个 modifier 都返回视图本身，订阅的生命周期与视图完全一致。不需要继承基类，也不需要遵循协议：任何 `UIView` 或 `NSView` 子类，包括你自己的，都可以绑定。
+每个 modifier 都返回视图本身，订阅的生命周期与视图一致，除非你用 `unbind()` 移除它。不需要继承基类，也不需要遵循协议：任何 `UIView` 或 `NSView` 子类，包括你自己的，都可以绑定。
 
 ## 目录
 
@@ -32,6 +32,7 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 - [用法](#用法)
   - [数据到视图](#数据到视图)
   - [视图的事件](#视图的事件)
+  - [解除绑定](#解除绑定)
   - [Publisher](#publisher)
   - [AppKit](#appkit)
 - [规则](#规则)
@@ -129,6 +130,26 @@ UITextField()
     .bind(\.text, to: name)
     .send(\.textPublisher, to: name)
 ```
+
+### 解除绑定
+
+`unbind()` 取消 `bind`、`onReceive`、`sink` 和 `send` 加在一个视图上的全部订阅。`unbindRecursively()` 对这个视图和它下面的所有视图做同样的事。
+
+可复用 cell 如果每次配置时都绑定，就要先解除绑定。否则上一个条目的绑定会和新的绑定一起生效：
+
+```swift
+override func prepareForReuse() {
+    super.prepareForReuse()
+    unbindRecursively()
+}
+
+func configure(with item: Item) {
+    titleLabel.bind(\.text, to: item.$title)
+    likeButton.sink(\.tapPublisher) { [weak item] in item?.toggleLike() }
+}
+```
+
+`unbindRecursively()` 也会移除只做一次的绑定，例如 cell 初始化方法里的那些。想保留它们，就只对要重新绑定的视图调用 `unbind()`。你自己保存的订阅不受影响。
 
 ### Publisher
 
@@ -424,7 +445,7 @@ NSButton()
 ## 已知限制
 
 - 内容闭包仍然只运行一次。绑定更新的是属性，不会增加、移除或重排视图。
-- 绑定在视图释放之前无法移除，所以不要在每次配置可复用 cell 时重新绑定。
+- `unbind()` 一次移除视图的全部绑定。要单独取消某一个，请自己订阅 publisher 并保存 cancellable。
 - 没有代理回调的 publisher，例如选中表格的一行。请自己设置代理。
 - 在 macOS 上，从 `NSComboBox` 的下拉列表里选择条目不会让 `stringValuePublisher` 发出，只有键入才会。
 - 在 macOS 上，`documentVisibleRectPublisher` 使用 document view 自己的坐标系，所以除非 document view 是 flipped，否则 `origin.y` 向上增大。

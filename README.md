@@ -23,7 +23,7 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 }
 ```
 
-Every modifier returns the view itself, and the subscription lives exactly as long as the view. There is no base class to inherit and no protocol to adopt: any `UIView` or `NSView` subclass, including your own, can be bound.
+Every modifier returns the view itself, and the subscription lives as long as the view, unless you remove it with `unbind()`. There is no base class to inherit and no protocol to adopt: any `UIView` or `NSView` subclass, including your own, can be bound.
 
 ## Contents
 
@@ -32,6 +32,7 @@ Every modifier returns the view itself, and the subscription lives exactly as lo
 - [Usage](#usage)
   - [Data to a view](#data-to-a-view)
   - [Events from a view](#events-from-a-view)
+  - [Unbinding](#unbinding)
   - [Publishers](#publishers)
   - [AppKit](#appkit)
 - [Rules](#rules)
@@ -129,6 +130,26 @@ UITextField()
     .bind(\.text, to: name)
     .send(\.textPublisher, to: name)
 ```
+
+### Unbinding
+
+`unbind()` cancels every subscription that `bind`, `onReceive`, `sink` and `send` added to a view. `unbindRecursively()` does the same for the view and every view below it.
+
+A reusable cell that binds each time it is configured has to unbind first. Otherwise the bindings of the previous item stay active next to the new ones:
+
+```swift
+override func prepareForReuse() {
+    super.prepareForReuse()
+    unbindRecursively()
+}
+
+func configure(with item: Item) {
+    titleLabel.bind(\.text, to: item.$title)
+    likeButton.sink(\.tapPublisher) { [weak item] in item?.toggleLike() }
+}
+```
+
+`unbindRecursively()` also removes bindings that were made only once, such as those in the cell's initializer. To keep them, call `unbind()` on the views you bind again. Subscriptions you store yourself are not affected.
 
 ### Publishers
 
@@ -424,7 +445,7 @@ NSButton()
 ## Known limitations
 
 - A content closure still runs once. Bindings update properties; they do not add, remove or reorder views.
-- A binding cannot be removed before its view is released, so do not bind again each time a reusable cell is configured.
+- `unbind()` removes all of a view's bindings at once. To cancel a single one, subscribe to the publisher yourself and keep the cancellable.
 - There are no publishers for delegate callbacks, such as selecting a table view row. Set the delegate yourself.
 - On macOS, choosing an item from an `NSComboBox` list does not emit from `stringValuePublisher`; only typing does.
 - On macOS, `documentVisibleRectPublisher` reports the document view's own coordinates, so `origin.y` runs upwards unless the document view is flipped.
