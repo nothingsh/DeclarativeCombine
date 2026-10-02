@@ -39,8 +39,8 @@ private extension PublisherBindable {
 }
 
 /// Each modifier subscribes once and keeps the subscription until the view is
-/// released. Values are applied synchronously where the publisher emits, so
-/// it must emit on the main thread.
+/// released or unbound. Values are applied synchronously where the publisher
+/// emits, so it must emit on the main thread.
 @MainActor
 public extension PublisherBindable {
 
@@ -102,5 +102,18 @@ public extension PublisherBindable {
         to subject: S
     ) -> Self where P.Failure == Never, S.Output == P.Output, S.Failure == Never {
         sink(publisher) { subject.send($0) }
+    }
+
+    /// Cancels every subscription the binding modifiers added to this view.
+    /// Its subviews keep theirs.
+    func unbind() {
+        objc_setAssociatedObject(self, &cancellableStoreKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    }
+
+    /// Cancels every subscription the binding modifiers added to this view
+    /// and to every view below it.
+    func unbindRecursively() {
+        unbind()
+        subviews.forEach { $0.unbindRecursively() }
     }
 }

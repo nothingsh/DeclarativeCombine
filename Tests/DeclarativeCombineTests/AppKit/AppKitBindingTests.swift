@@ -33,5 +33,38 @@ final class AppKitBindingTests: XCTestCase {
         XCTAssertEqual(cancelCount, 2)
         text.send("abc")
     }
+
+    func testUnbindCancelsTheViewsBindingsButNotItsSubviews() {
+        let alpha = PassthroughSubject<CGFloat, Never>()
+        var clickCount = 0
+        let field: NSTextField = NSTextField().bind(\.alphaValue, to: alpha)
+        let button: NSButton = NSButton()
+            .bind(\.alphaValue, to: alpha)
+            .sink(\.clickPublisher) { clickCount += 1 }
+        button.addSubview(field)
+
+        button.unbind()
+        alpha.send(0.5)
+        button.fire()
+
+        XCTAssertEqual(button.alphaValue, 1)
+        XCTAssertEqual(clickCount, 0)
+        XCTAssertEqual(field.alphaValue, 0.5)
+    }
+
+    func testUnbindRecursivelyCancelsTheBindingsOfTheViewAndItsDescendants() {
+        let alpha = PassthroughSubject<CGFloat, Never>()
+        let grandchild: NSView = NSView().bind(\.alphaValue, to: alpha)
+        let child = NSView()
+        let root: NSView = NSView().bind(\.alphaValue, to: alpha)
+        child.addSubview(grandchild)
+        root.addSubview(child)
+
+        root.unbindRecursively()
+        alpha.send(0.5)
+
+        XCTAssertEqual(root.alphaValue, 1)
+        XCTAssertEqual(grandchild.alphaValue, 1)
+    }
 }
 #endif

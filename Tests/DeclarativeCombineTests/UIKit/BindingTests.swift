@@ -116,5 +116,51 @@ final class BindingTests: XCTestCase {
         XCTAssertEqual(cancelCount, 2)
         text.send("abc")
     }
+
+    func testUnbindCancelsTheViewsBindingsButNotItsSubviews() {
+        let alpha = PassthroughSubject<CGFloat, Never>()
+        var tapCount = 0
+        let label: UILabel = UILabel().bind(\.alpha, to: alpha)
+        let button: UIButton = UIButton()
+            .bind(\.alpha, to: alpha)
+            .sink(\.tapPublisher) { tapCount += 1 }
+        button.addSubview(label)
+
+        button.unbind()
+        alpha.send(0.5)
+        button.fire(.touchUpInside)
+
+        XCTAssertEqual(button.alpha, 1)
+        XCTAssertEqual(tapCount, 0)
+        XCTAssertEqual(label.alpha, 0.5)
+    }
+
+    func testBindingAgainAfterUnbindFollowsOnlyTheNewPublisher() {
+        let old = PassthroughSubject<String, Never>()
+        let new = PassthroughSubject<String, Never>()
+        let label: UILabel = UILabel().bind(\.text, to: old)
+
+        label.unbind()
+        label.bind(\.text, to: new)
+        new.send("new")
+        old.send("old")
+
+        XCTAssertEqual(label.text, "new")
+    }
+
+    func testUnbindRecursivelyCancelsTheBindingsOfTheViewAndItsDescendants() {
+        let alpha = PassthroughSubject<CGFloat, Never>()
+        let grandchild: UIView = UIView().bind(\.alpha, to: alpha)
+        let child = UIView()
+        let root: UIView = UIView().bind(\.alpha, to: alpha)
+        child.addSubview(grandchild)
+        root.addSubview(child)
+
+        root.unbindRecursively()
+        alpha.send(0.5)
+
+        XCTAssertEqual(root.alpha, 1)
+        XCTAssertEqual(grandchild.alpha, 1)
+    }
 }
 #endif
