@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nothingsh/DeclarativeAppKit",
       "state" : {
-        "revision" : "2fea33c0451adeca3569d435f9d2168303b80b47",
-        "version" : "0.1.0"
+        "revision" : "4e4bb3706d918ddd6885b3358b8f6b435063e08a",
+        "version" : "0.2.0"
       }
     },
     {
@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nothingsh/DeclarativeUIKit",
       "state" : {
-        "revision" : "4fc835ac38751b184a9ef0c561e39000f64aa340",
-        "version" : "0.1.0"
+        "revision" : "5bd2ded0395ab92ac71819ce50aa8b8ced487f08",
+        "version" : "0.2.0"
       }
     }
   ],

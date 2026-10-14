@@ -10,10 +10,10 @@ packages:
     path: ..
   DeclarativeUIKit:
     url: https://github.com/nothingsh/DeclarativeUIKit
-    from: "0.1.0"
+    from: "0.2.0"
   DeclarativeAppKit:
     url: https://github.com/nothingsh/DeclarativeAppKit
-    from: "0.1.0"
+    from: "0.2.0"
 targets:
   Example:
     type: application
