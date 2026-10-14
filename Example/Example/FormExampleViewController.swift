@@ -108,11 +108,8 @@ final class FormExampleViewController: UIViewController {
                     .font(textStyle: .body)
                     .isScrollEnabled(false)
                     .frame(minHeight: 44)
-                    .configure {
-                        $0.layer.cornerRadius = 6
-                        $0.layer.borderWidth = 1
-                        $0.layer.borderColor = UIColor.separator.cgColor
-                    }
+                    .cornerRadius(6)
+                    .border(color: .separator, width: 1)
                     .bind(\.text, to: model.notes)
                     .send(\.textPublisher, to: model.notes)
             }

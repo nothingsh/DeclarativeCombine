@@ -497,7 +497,7 @@
 			repositoryURL = "https://github.com/nothingsh/DeclarativeUIKit";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
+				minimumVersion = 0.2.0;
 			};
 		};
 		F2751054AE1C204BF700A379 /* XCRemoteSwiftPackageReference "DeclarativeAppKit" */ = {
@@ -505,7 +505,7 @@
 			repositoryURL = "https://github.com/nothingsh/DeclarativeAppKit";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
+				minimumVersion = 0.2.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

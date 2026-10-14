@@ -55,10 +55,8 @@ final class ControlsExampleViewController: ExampleScreenViewController {
                             .map { "Quantity: \(Int($0))\($1 ? ", gift wrapped" : "")" })
                     Spacer()
                     NSStepper()
-                        .configure {
-                            $0.minValue = 1
-                            $0.maxValue = 99
-                        }
+                        .minValue(1)
+                        .maxValue(99)
                         .bind(\.doubleValue, to: model.$quantity)
                         .sink(\.doubleValuePublisher) { model.quantity = $0 }
                 }

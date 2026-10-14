@@ -50,7 +50,7 @@ final class ControlsExampleViewController: UIViewController {
                         .bind(\.text, to: model.$quantity.map { "Quantity: \(Int($0))" })
                     Spacer()
                     UIStepper()
-                        .configure { $0.minimumValue = 1 }
+                        .minimumValue(1)
                         .bind(\.value, to: model.$quantity)
                         .sink(\.valuePublisher) { model.quantity = $0 }
                 }
@@ -79,11 +79,9 @@ final class ControlsExampleViewController: UIViewController {
                     .font(textStyle: .body)
                     .bind(\.text, to: model.$page.map { "Page \($0 + 1) of \(ControlsViewModel.pageCount)" })
                 UIPageControl()
-                    .configure {
-                        $0.numberOfPages = ControlsViewModel.pageCount
-                        $0.pageIndicatorTintColor = .tertiaryLabel
-                        $0.currentPageIndicatorTintColor = .label
-                    }
+                    .numberOfPages(ControlsViewModel.pageCount)
+                    .pageIndicatorTintColor(.tertiaryLabel)
+                    .currentPageIndicatorTintColor(.label)
                     .bind(\.currentPage, to: model.$page)
                     .sink(\.currentPagePublisher) { model.page = $0 }
             }

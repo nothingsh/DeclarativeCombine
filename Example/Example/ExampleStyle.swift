@@ -12,7 +12,7 @@ extension UIStackView {
             .background {
                 UIView()
                     .background(.secondarySystemGroupedBackground)
-                    .configure { $0.layer.cornerRadius = 12 }
+                    .cornerRadius(12)
             }
     }
 }
