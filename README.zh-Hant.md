@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/declarative-combine-dark.svg">
+    <img src="docs/images/declarative-combine-light.svg" alt="DeclarativeCombine — 在宣告視圖的地方把它繫結到 Combine。" width="850">
+  </picture>
+</p>
+
 # DeclarativeCombine
 
 [English](README.md) | [简体中文](README.zh-Hans.md) | **繁體中文**
@@ -55,13 +62,15 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.1.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.2.0")
 ]
 ```
 
 或在 Xcode 中選擇 File → Add Package Dependencies，輸入 `https://github.com/nothingsh/DeclarativeCombine`。
 
 本套件不依賴 DeclarativeUIKit 或 DeclarativeAppKit。和其中任何一個一起加入即可搭配使用，也可以單獨用在任何 UIKit 或 AppKit 程式碼裡。
+
+各版本的變更請見 [CHANGELOG.md](CHANGELOG.md)。API 參考文件：在 Xcode 中開啟本套件，選擇 Product → Build Documentation。
 
 ## 用法
 
@@ -258,7 +267,7 @@ view.addVStack(alignment: .leading, spacing: 12) {
 
 - **弱參考 `self`。** 視圖在存活期間一直持有你的閉包，也包括你繫結的 publisher 裡的閉包，例如 `map { self.format($0) }`。閉包強參考視圖控制器會造成循環參考。
 - **publisher 不能失敗。** 只接受 `Failure == Never`。繫結前先處理錯誤，例如用 `replaceError(with:)`。
-- **在主執行緒發出。** 值在 publisher 發出的地方同步套用，函式庫不會替你切到主執行緒。在背景發出的 publisher 要加 `receive(on: DispatchQueue.main)`。
+- **在主執行緒發出。** 值在 publisher 發出的地方同步套用，函式庫不會替你切到主執行緒。在背景發出的 publisher 要加 `receive(on: DispatchQueue.main)`。控制項和手勢 publisher 的訂閱與取消也要在主執行緒進行；在其他執行緒做任何一項，都會以執行階段錯誤終止 App。
 - **每個值都會被指派。** 加 `removeDuplicates()` 可以略過沒有變化的值。
 - **使用傳給閉包的值。** `@Published` 在屬性改變之前發出，在 `onReceive` 裡讀這個屬性得到的是舊值。
 - **同一個屬性繫結兩次，兩個訂閱都會保留。** 以最新的值為準。

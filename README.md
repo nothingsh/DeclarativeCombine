@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/declarative-combine-dark.svg">
+    <img src="docs/images/declarative-combine-light.svg" alt="DeclarativeCombine — Bind views to Combine where they are declared." width="850">
+  </picture>
+</p>
+
 # DeclarativeCombine
 
 **English** | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md)
@@ -55,13 +62,15 @@ Swift Package Manager. In `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.1.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.2.0")
 ]
 ```
 
 Or in Xcode, choose File → Add Package Dependencies and enter `https://github.com/nothingsh/DeclarativeCombine`.
 
 This package does not depend on DeclarativeUIKit or DeclarativeAppKit. Add it next to either one, or use it on its own with any UIKit or AppKit code.
+
+Changes between versions are listed in [CHANGELOG.md](CHANGELOG.md). For the API reference, open the package in Xcode and choose Product → Build Documentation.
 
 ## Usage
 
@@ -258,7 +267,7 @@ A gesture recognizer has a single target too, so pass each recognizer to one sub
 
 - **Capture `self` weakly.** The view keeps your closure for as long as it lives, and that includes closures inside the publisher you bind, such as `map { self.format($0) }`. A closure that captures the view controller strongly creates a retain cycle.
 - **Publishers must not fail.** Only `Failure == Never` is accepted. Handle errors before binding, for example with `replaceError(with:)`.
-- **Emit on the main thread.** Values are applied synchronously, wherever the publisher emits; nothing hops to the main thread for you. Add `receive(on: DispatchQueue.main)` to a publisher that emits in the background.
+- **Emit on the main thread.** Values are applied synchronously, wherever the publisher emits; nothing hops to the main thread for you. Add `receive(on: DispatchQueue.main)` to a publisher that emits in the background. Subscribe to and cancel the control and gesture publishers on the main thread as well; doing either on another thread stops the app with a runtime error.
 - **Every value is assigned.** Add `removeDuplicates()` to skip values that did not change.
 - **Use the value passed to the closure.** `@Published` emits before the property changes, so reading the property inside `onReceive` returns the old value.
 - **Binding one property twice keeps both subscriptions.** The latest value wins.
