@@ -4,7 +4,8 @@ import UIKit
 
 /// Adds the recognizer to the view, and is the recognizer's target, for as
 /// long as it is subscribed.
-private final class GestureSubscription: NSObject, Subscription {
+/// Used on the main thread only, which `init` and `cancel` check.
+private final class GestureSubscription: NSObject, Subscription, @unchecked Sendable {
 
     private weak var view: UIView?
     private let recognizer: UIGestureRecognizer
@@ -16,8 +17,10 @@ private final class GestureSubscription: NSObject, Subscription {
         self.recognizer = recognizer
         self.receive = receive
         super.init()
-        recognizer.addTarget(self, action: #selector(gestureFired))
-        view?.addGestureRecognizer(recognizer)
+        MainActor.assumeIsolated {
+            recognizer.addTarget(self, action: #selector(gestureFired))
+            view?.addGestureRecognizer(recognizer)
+        }
     }
 
     func request(_ demand: Subscribers.Demand) {
@@ -25,8 +28,10 @@ private final class GestureSubscription: NSObject, Subscription {
     }
 
     func cancel() {
-        recognizer.removeTarget(self, action: #selector(gestureFired))
-        view?.removeGestureRecognizer(recognizer)
+        MainActor.assumeIsolated {
+            recognizer.removeTarget(self, action: #selector(gestureFired))
+            view?.removeGestureRecognizer(recognizer)
+        }
         receive = nil
     }
 

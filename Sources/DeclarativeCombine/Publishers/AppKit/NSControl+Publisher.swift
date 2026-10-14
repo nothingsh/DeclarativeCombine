@@ -2,7 +2,7 @@
 import AppKit
 import Combine
 
-private var actionRelayKey: UInt8 = 0
+@MainActor private var actionRelayKey: UInt8 = 0
 
 /// The control's only target while it has subscribers. A control has a single
 /// target and action, so one relay passes each action on to every
@@ -13,10 +13,12 @@ private final class ActionRelay: NSObject {
 
     var isEmpty: Bool { handlers.isEmpty }
 
+    @MainActor
     static func existing(on control: NSControl) -> ActionRelay? {
         objc_getAssociatedObject(control, &actionRelayKey) as? ActionRelay
     }
 
+    @MainActor
     static func relay(on control: NSControl) -> ActionRelay {
         if let relay = existing(on: control) {
             return relay
@@ -44,7 +46,8 @@ private final class ActionRelay: NSObject {
 }
 
 /// Registers with the control's relay for as long as it is subscribed.
-private final class ActionSubscription: Subscription {
+/// Used on the main thread only, which `init` and `cancel` check.
+private final class ActionSubscription: Subscription, @unchecked Sendable {
 
     private weak var control: NSControl?
     private var receive: (() -> Subscribers.Demand)?
@@ -54,12 +57,14 @@ private final class ActionSubscription: Subscription {
         self.control = control
         self.receive = receive
         guard let control else { return }
-        let relay = ActionRelay.relay(on: control)
-        relay.add({ [weak self] in self?.actionSent() }, for: self)
-        // Set on every subscription, so that a new one takes the control back
-        // if its target was replaced in the meantime.
-        control.target = relay
-        control.action = #selector(ActionRelay.actionSent)
+        MainActor.assumeIsolated {
+            let relay = ActionRelay.relay(on: control)
+            relay.add({ [weak self] in self?.actionSent() }, for: self)
+            // Set on every subscription, so that a new one takes the control
+            // back if its target was replaced in the meantime.
+            control.target = relay
+            control.action = #selector(ActionRelay.actionSent)
+        }
     }
 
     func request(_ demand: Subscribers.Demand) {
@@ -68,16 +73,19 @@ private final class ActionSubscription: Subscription {
 
     func cancel() {
         receive = nil
-        guard let control, let relay = ActionRelay.existing(on: control) else { return }
-        relay.remove(for: self)
-        guard relay.isEmpty else { return }
-        // The caller may have replaced the target, the action or both, so
-        // each is cleared only if it is still the relay's.
-        if control.target === relay {
-            control.target = nil
-        }
-        if control.action == #selector(ActionRelay.actionSent) {
-            control.action = nil
+        guard let control else { return }
+        MainActor.assumeIsolated {
+            guard let relay = ActionRelay.existing(on: control) else { return }
+            relay.remove(for: self)
+            guard relay.isEmpty else { return }
+            // The caller may have replaced the target, the action or both, so
+            // each is cleared only if it is still the relay's.
+            if control.target === relay {
+                control.target = nil
+            }
+            if control.action == #selector(ActionRelay.actionSent) {
+                control.action = nil
+            }
         }
     }
 
