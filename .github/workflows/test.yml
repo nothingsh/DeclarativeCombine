@@ -1,0 +1,27 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick an iPhone simulator
+        run: |
+          udid=$(xcrun simctl list devices available --json | jq -r '
+            [.devices | to_entries[] | select(.key | contains("iOS")) | .value[]
+              | select(.name | startswith("iPhone"))][0].udid')
+          echo "IOS_SIMULATOR_ID=$udid" >> "$GITHUB_ENV"
+
+      # Complete concurrency checking with warnings as errors, so a new data race
+      # warning fails the build.
+      - name: Test on iOS
+        run: scripts/test-ios.sh SWIFT_STRICT_CONCURRENCY=complete SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
+
+      - name: Test on macOS
+        run: scripts/test-macos.sh -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
