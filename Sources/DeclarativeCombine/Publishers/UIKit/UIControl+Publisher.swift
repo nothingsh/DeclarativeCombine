@@ -3,7 +3,8 @@ import Combine
 import UIKit
 
 /// Registers itself as the control's target for as long as it is subscribed.
-private final class ControlEventSubscription: NSObject, Subscription {
+/// Used on the main thread only, which `init` and `cancel` check.
+private final class ControlEventSubscription: NSObject, Subscription, @unchecked Sendable {
 
     private weak var control: UIControl?
     private let events: UIControl.Event
@@ -15,7 +16,9 @@ private final class ControlEventSubscription: NSObject, Subscription {
         self.events = events
         self.receive = receive
         super.init()
-        control?.addTarget(self, action: #selector(eventFired), for: events)
+        MainActor.assumeIsolated {
+            control?.addTarget(self, action: #selector(eventFired), for: events)
+        }
     }
 
     func request(_ demand: Subscribers.Demand) {
@@ -23,7 +26,9 @@ private final class ControlEventSubscription: NSObject, Subscription {
     }
 
     func cancel() {
-        control?.removeTarget(self, action: #selector(eventFired), for: events)
+        MainActor.assumeIsolated {
+            control?.removeTarget(self, action: #selector(eventFired), for: events)
+        }
         receive = nil
     }
 

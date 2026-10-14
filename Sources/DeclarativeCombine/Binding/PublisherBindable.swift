@@ -5,7 +5,7 @@ import UIKit
 import AppKit
 #endif
 
-private var cancellableStoreKey: UInt8 = 0
+@MainActor private var cancellableStoreKey: UInt8 = 0
 
 /// Keeps a view's subscriptions alive for as long as the view.
 private final class CancellableStore {
@@ -26,6 +26,7 @@ public protocol PublisherBindable: NSView {}
 extension NSView: PublisherBindable {}
 #endif
 
+@MainActor
 private extension PublisherBindable {
 
     var cancellableStore: CancellableStore {
