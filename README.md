@@ -62,7 +62,7 @@ Swift Package Manager. In `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.2.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.3.0")
 ]
 ```
 
