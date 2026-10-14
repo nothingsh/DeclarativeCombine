@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/declarative-combine-dark.svg">
+    <img src="docs/images/declarative-combine-light.svg" alt="DeclarativeCombine — 在声明视图的地方把它绑定到 Combine。" width="850">
+  </picture>
+</p>
+
 # DeclarativeCombine
 
 [English](README.md) | **简体中文** | [繁體中文](README.zh-Hant.md)
@@ -55,13 +62,15 @@ view.addVStack(alignment: .fill, spacing: 12, safeArea: .all) {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.1.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeCombine.git", from: "0.2.0")
 ]
 ```
 
 或在 Xcode 中选择 File → Add Package Dependencies，输入 `https://github.com/nothingsh/DeclarativeCombine`。
 
 本包不依赖 DeclarativeUIKit 或 DeclarativeAppKit。和其中任何一个一起添加即可配合使用，也可以单独用在任何 UIKit 或 AppKit 代码里。
+
+各版本的变更见 [CHANGELOG.md](CHANGELOG.md)。API 参考文档：在 Xcode 中打开本 package，选择 Product → Build Documentation。
 
 ## 用法
 
@@ -258,7 +267,7 @@ view.addVStack(alignment: .leading, spacing: 12) {
 
 - **弱引用 `self`。** 视图在存活期间一直持有你的闭包，也包括你绑定的 publisher 里的闭包，例如 `map { self.format($0) }`。闭包强引用视图控制器会造成循环引用。
 - **publisher 不能失败。** 只接受 `Failure == Never`。绑定前先处理错误，例如用 `replaceError(with:)`。
-- **在主线程发出。** 值在 publisher 发出的地方同步应用，库不会替你切到主线程。在后台发出的 publisher 要加 `receive(on: DispatchQueue.main)`。
+- **在主线程发出。** 值在 publisher 发出的地方同步应用，库不会替你切到主线程。在后台发出的 publisher 要加 `receive(on: DispatchQueue.main)`。控件和手势 publisher 的订阅与取消也要在主线程进行；在其他线程做任何一样，都会以运行时错误终止应用。
 - **每个值都会被赋值。** 加 `removeDuplicates()` 可以跳过没有变化的值。
 - **使用传给闭包的值。** `@Published` 在属性改变之前发出，在 `onReceive` 里读这个属性得到的是旧值。
 - **同一个属性绑定两次，两个订阅都会保留。** 以最新的值为准。
